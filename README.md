@@ -2,6 +2,8 @@
 
 Wraps [LynxJS](https://lynxjs.org)'s native `LynxView` as a Flutter `PlatformView`, so an existing Flutter app can embed Lynx templates.
 
+📖 한국어 문서: [docs/ko](docs/ko/README.md)
+
 ## Features
 
 - Renders a remote Lynx bundle (`templateUrl`) inside a Flutter widget, Android and iOS.
@@ -53,6 +55,8 @@ class AppDelegate: FlutterAppDelegate {
   }
 }
 ```
+
+> **CocoaPods only, no Swift Package Manager yet.** `lynx_view_ios` depends on the `Lynx`/`PrimJS` pods, and Lynx itself isn't distributed via SPM upstream ([lynx-family/lynx#162](https://github.com/lynx-family/lynx/issues/162) is an open, unanswered feature request). Since a Flutter SPM plugin can't mix in a CocoaPods-only native dependency, this package can't support SPM until Lynx does.
 
 ## Usage
 

@@ -66,4 +66,16 @@ object LynxViewPlugin {
             initialized = true
         }
     }
+
+    /** Test-only: names still queued (i.e. not yet flushed by [ensureInitialized]). */
+    internal fun pendingModuleNamesForTesting(): List<String> =
+        synchronized(this) { pendingModules.map { it.first } }
+
+    /** Test-only: resets singleton state between test cases. Never call from app code. */
+    internal fun resetForTesting() {
+        synchronized(this) {
+            pendingModules.clear()
+            initialized = false
+        }
+    }
 }

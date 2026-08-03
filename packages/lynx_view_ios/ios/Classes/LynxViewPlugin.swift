@@ -55,4 +55,19 @@ public final class LynxViewPlugin: NSObject {
         pendingModules.removeAll()
         initialized = true
     }
+
+    /// Test-only: names still queued (i.e. not yet flushed by `ensureInitialized`).
+    static func pendingModuleNamesForTesting() -> [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return pendingModules.map { $0.name }
+    }
+
+    /// Test-only: resets singleton state between test cases. Never call from app code.
+    static func resetForTesting() {
+        lock.lock()
+        defer { lock.unlock() }
+        pendingModules.removeAll()
+        initialized = false
+    }
 }
