@@ -117,21 +117,21 @@ packages:
   lynx_view_android:
     dependency: "direct overridden"
     description:
-      path: "../../lynx_view_android"
+      path: "../packages/lynx_view_android"
       relative: true
     source: path
     version: "1.0.0"
   lynx_view_ios:
     dependency: "direct overridden"
     description:
-      path: "../../lynx_view_ios"
+      path: "../packages/lynx_view_ios"
       relative: true
     source: path
     version: "1.0.0"
   lynx_view_platform_interface:
     dependency: "direct overridden"
     description:
-      path: "../../lynx_view_platform_interface"
+      path: "../packages/lynx_view_platform_interface"
       relative: true
     source: path
     version: "1.0.0"

@@ -1,0 +1,8 @@
+# Local monorepo development only — see ../pubspec_overrides.yaml.
+dependency_overrides:
+  lynx_view_platform_interface:
+    path: ../packages/lynx_view_platform_interface
+  lynx_view_android:
+    path: ../packages/lynx_view_android
+  lynx_view_ios:
+    path: ../packages/lynx_view_ios
