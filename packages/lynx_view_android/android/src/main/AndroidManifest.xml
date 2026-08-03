@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.geektree0101.lynx_view_android">
+  <!-- Needed by RemoteTemplateProvider, which fetches Lynx bundles over HTTP(S). -->
+  <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

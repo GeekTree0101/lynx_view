@@ -1,0 +1,11 @@
+# Local monorepo development only — points sibling federated packages at
+# their working-tree source instead of a published pub.dev version, since
+# these packages haven't been published yet. Not used when this package is
+# consumed from pub.dev.
+dependency_overrides:
+  lynx_view_platform_interface:
+    path: ../lynx_view_platform_interface
+  lynx_view_android:
+    path: ../lynx_view_android
+  lynx_view_ios:
+    path: ../lynx_view_ios

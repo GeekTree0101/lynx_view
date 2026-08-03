@@ -1,0 +1,76 @@
+group = "com.geektree0101.lynx_view_android"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "1.8.22"
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.7.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "com.geektree0101.lynx_view_android"
+
+    compileSdk = 35
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        // Lynx SDK 4.0.0 targets "Android 5.0 (API 21) or newer" per the
+        // official requirements (github.com/lynx-family/lynx README).
+        minSdk = 21
+    }
+
+    dependencies {
+        // Lynx core engine + JS runtime. Kept as `api` (not `implementation`)
+        // so host apps that write custom LynxModules can reference Lynx SDK
+        // types directly without redeclaring the dependency themselves.
+        api "org.lynxsdk.lynx:lynx:4.0.0"
+        api "org.lynxsdk.lynx:lynx-jssdk:4.0.0"
+        api "org.lynxsdk.lynx:lynx-trace:4.0.0"
+        api "org.lynxsdk.lynx:primjs:4.0.0"
+
+        testImplementation("org.jetbrains.kotlin:kotlin-test")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+    }
+
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+
+            testLogging {
+               events "passed", "skipped", "failed", "standardOut", "standardError"
+               outputs.upToDateWhen {false}
+               showStandardStreams = true
+            }
+        }
+    }
+}
