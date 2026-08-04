@@ -5,7 +5,9 @@ homepage: https://github.com/GeekTree0101/lynx_view
 
 environment:
   sdk: ^3.7.2
-  flutter: ">=1.17.0"
+  # A federated app-facing plugin has no ios/ folder of its own, which pub.dev
+  # only accepts from Flutter 1.20 on. Matches lynx_view_ios's floor.
+  flutter: ">=3.3.0"
 
 dependencies:
   flutter:
