@@ -18,7 +18,16 @@ final class RemoteTemplateProvider: NSObject, LynxTemplateProvider {
             return
         }
 
-        let task = URLSession.shared.dataTask(with: requestUrl) { data, response, error in
+        // OTA republishes a new bundle at the *same* URL, so the default cache
+        // policy silently defeats `reload()` — iOS keeps serving the copy it
+        // already has (across app launches too, since URLCache is on disk) and
+        // never even asks the server. Always revalidate: a 304 still lets
+        // URLSession hand back the cached bytes, so this costs a conditional
+        // request, not a re-download.
+        var request = URLRequest(url: requestUrl)
+        request.cachePolicy = .reloadRevalidatingCacheData
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
                 callback(nil, error as NSError)
                 return

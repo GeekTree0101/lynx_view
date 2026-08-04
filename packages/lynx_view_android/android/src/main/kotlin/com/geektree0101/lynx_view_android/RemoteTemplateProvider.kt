@@ -25,6 +25,13 @@ internal class RemoteTemplateProvider : AbsTemplateProvider() {
                 connection.requestMethod = "GET"
                 connection.connectTimeout = 15_000
                 connection.readTimeout = 15_000
+                // OTA republishes a new bundle at the same URL, so serving a
+                // cached response without asking would make reload() a silent
+                // no-op (this is what bit the iOS side, where URLSession
+                // caches by default). `no-cache` means revalidate before
+                // reuse — not "don't cache" — so a 304 still avoids
+                // re-downloading the bundle.
+                connection.setRequestProperty("Cache-Control", "no-cache")
                 try {
                     if (connection.responseCode !in 200..299) {
                         callback.onFailed("HTTP ${connection.responseCode} for $uri")
