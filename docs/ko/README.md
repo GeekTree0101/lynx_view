@@ -10,6 +10,7 @@ pub.dev 페이지에 노출되는 [루트 README.md](../../README.md)는 영어�
 - [기본 사용법](./usage.md) — `LynxView` 위젯과 `LynxViewController`
 - [JS ↔ Dart 브릿지](./bridge.md) — 네이티브 코드 없이 쓰는 기본 브릿지(Tier 1)와 커스텀 네이티브 모듈(Tier 2)
 - [OTA / CodePush 연동](./ota.md) — `reload()`로 런타임에 번들 교체하기
+- [로컬 검증 가이드](./local-testing.md) — 테스트용 번들을 만들어 시뮬레이터에서 직접 확인하기
 
 ## 이 패키지가 하지 않는 것
 
