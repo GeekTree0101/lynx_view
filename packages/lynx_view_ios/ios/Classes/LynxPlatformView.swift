@@ -11,6 +11,7 @@ private let instanceChannelPrefix = "com.geektree0101.lynx_view/instance_"
 /// `onLoadSuccess`/`onLoadError`/`onMessage` out.
 final class LynxPlatformView: NSObject, FlutterPlatformView {
     private let lynxView: LynxView
+    private let containerView: LynxContainerView
     private let channel: FlutterMethodChannel
     private let viewId: Int64
 
@@ -30,7 +31,9 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
         binaryMessenger messenger: FlutterBinaryMessenger
     ) {
         self.viewId = viewId
-        self.lynxView = LynxView(frame: frame)
+        let lynxView = LynxView(frame: frame)
+        self.lynxView = lynxView
+        self.containerView = LynxContainerView(lynxView: lynxView)
         self.channel = FlutterMethodChannel(
             name: "\(instanceChannelPrefix)\(viewId)",
             binaryMessenger: messenger
@@ -54,7 +57,7 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
     }
 
     func view() -> UIView {
-        lynxView
+        containerView
     }
 
     private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
