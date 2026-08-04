@@ -1,6 +1,8 @@
 package com.geektree0101.lynx_view_android
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.lynx.react.bridge.JavaOnlyArray
 import com.lynx.react.bridge.JavaOnlyMap
 import com.lynx.tasm.LynxError
@@ -31,17 +33,37 @@ internal class LynxPlatformView(
 
     private val lynxView: LynxView = LynxViewBuilder().build(context)
     private val channel = MethodChannel(binaryMessenger, "$INSTANCE_CHANNEL_PREFIX$viewId")
+    private val mainHandler = Handler(Looper.getMainLooper())
 
+    /**
+     * Lynx cannot cancel a template load, and two loads running at once on the
+     * same [LynxView] race each other into an empty tree. So only one is ever
+     * in flight; a request that arrives during one is remembered and runs
+     * after it, and only the last one is kept — a burst of `reload()` calls
+     * collapses to "load the newest URL", never a pile-up. Main-thread only.
+     */
+    private var isLoading = false
+    private var pendingLoad: Pair<String, Map<String, Any?>?>? = null
+
+    // LynxViewClient callbacks fire off the main thread, but MethodChannel
+    // must be invoked on it — posting here matches the fix already applied
+    // in FlutterBridgeModule.postMessage.
     private val loadListener = object : LynxViewClient() {
         override fun onLoadSuccess() {
-            channel.invokeMethod("onLoadSuccess", null)
+            mainHandler.post {
+                if (finishLoad()) return@post
+                channel.invokeMethod("onLoadSuccess", null)
+            }
         }
 
         override fun onReceivedError(error: LynxError) {
-            channel.invokeMethod(
-                "onLoadError",
-                mapOf("code" to error.errorCode.toString(), "message" to error.msg),
-            )
+            mainHandler.post {
+                if (finishLoad()) return@post
+                channel.invokeMethod(
+                    "onLoadError",
+                    mapOf("code" to error.errorCode.toString(), "message" to error.msg),
+                )
+            }
         }
     }
 
@@ -101,11 +123,31 @@ internal class LynxPlatformView(
     }
 
     private fun load(templateUrl: String, initData: Map<String, Any?>?) {
+        if (isLoading) {
+            pendingLoad = templateUrl to initData
+            return
+        }
+        isLoading = true
         @Suppress("UNCHECKED_CAST")
         lynxView.renderTemplateUrl(templateUrl, (initData ?: emptyMap<String, Any?>()) as Map<String, Any>)
     }
 
+    /**
+     * Called when the in-flight load reports back. Returns true if another
+     * request came in while it was running — in that case this load's result
+     * is stale and must not be reported to Dart, since the newer load is what
+     * will actually end up on screen.
+     */
+    private fun finishLoad(): Boolean {
+        isLoading = false
+        val next = pendingLoad ?: return false
+        pendingLoad = null
+        load(next.first, next.second)
+        return true
+    }
+
     private fun disposeInternal() {
+        pendingLoad = null
         LynxViewRegistry.unregister(viewId)
         channel.setMethodCallHandler(null)
         lynxView.removeLynxViewClient(loadListener)

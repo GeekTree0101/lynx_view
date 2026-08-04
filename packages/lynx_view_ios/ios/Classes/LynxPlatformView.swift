@@ -14,6 +14,15 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
     private let channel: FlutterMethodChannel
     private let viewId: Int64
 
+    /// Lynx cannot cancel a template load, and two loads running at once on
+    /// the same `LynxView` race each other into an empty tree. So only one is
+    /// ever in flight; a request that arrives during one is remembered and
+    /// runs after it, and only the last one is kept — a burst of `reload()`
+    /// calls collapses to "load the newest URL", never a pile-up.
+    /// Main-thread only.
+    private var isLoading = false
+    private var pendingLoad: (templateUrl: String, initData: [String: Any]?)?
+
     init(
         frame: CGRect,
         viewId: Int64,
@@ -80,14 +89,32 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
     }
 
     private func load(templateUrl: String, initData: [String: Any]?) {
+        if isLoading {
+            pendingLoad = (templateUrl, initData)
+            return
+        }
+        isLoading = true
         let templateData = LynxTemplateData(dictionary: initData ?? [:])
         lynxView.loadTemplate(fromURL: templateUrl, initData: templateData)
+    }
+
+    /// Called when the in-flight load reports back. Returns true if another
+    /// request came in while it was running — in that case this load's result
+    /// is stale and must not be reported to Dart, since the newer load is
+    /// what will actually end up on screen.
+    private func finishLoad() -> Bool {
+        isLoading = false
+        guard let next = pendingLoad else { return false }
+        pendingLoad = nil
+        load(templateUrl: next.templateUrl, initData: next.initData)
+        return true
     }
 
     private func disposeInternal() {
         LynxViewRegistry.shared.unregister(viewId: Int(viewId))
         channel.setMethodCallHandler(nil)
         lynxView.removeLifecycleClient(self)
+        pendingLoad = nil
     }
 
     deinit {
@@ -96,15 +123,26 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
 }
 
 extension LynxPlatformView: LynxViewLifecycle {
+    // Lynx invokes these lifecycle callbacks off the main thread, but
+    // FlutterMethodChannel.invokeMethod must be called on the platform
+    // thread — calling it directly here trips the engine's threading
+    // check and can corrupt rendering for anything composited after this
+    // platform view (see FlutterBridgeModule.postMessage for the same fix).
     func lynxView(_ view: LynxView, didLoadFinishedWithUrl url: String) {
-        channel.invokeMethod("onLoadSuccess", arguments: nil)
+        DispatchQueue.main.async { [self] in
+            if finishLoad() { return }
+            channel.invokeMethod("onLoadSuccess", arguments: nil)
+        }
     }
 
     func lynxView(_ view: LynxView, didRecieveError error: Error) {
         let nsError = error as NSError
-        channel.invokeMethod(
-            "onLoadError",
-            arguments: ["code": "\(nsError.code)", "message": nsError.localizedDescription]
-        )
+        DispatchQueue.main.async { [self] in
+            if finishLoad() { return }
+            channel.invokeMethod(
+                "onLoadError",
+                arguments: ["code": "\(nsError.code)", "message": nsError.localizedDescription]
+            )
+        }
     }
 }
