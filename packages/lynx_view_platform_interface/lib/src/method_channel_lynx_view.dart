@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import 'lynx_view_platform.dart';
@@ -25,6 +26,7 @@ class MethodChannelLynxView extends LynxViewPlatform {
   Widget buildView({
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
+    Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
   }) {
     void onCreated(int viewId) {
       final MethodChannel channel =
@@ -41,6 +43,7 @@ class MethodChannelLynxView extends LynxViewPlatform {
           creationParams: creationParams,
           creationParamsCodec: const StandardMessageCodec(),
           onPlatformViewCreated: onCreated,
+          gestureRecognizers: gestureRecognizers ?? const {},
         );
       case TargetPlatform.iOS:
         return UiKitView(
@@ -48,6 +51,7 @@ class MethodChannelLynxView extends LynxViewPlatform {
           creationParams: creationParams,
           creationParamsCodec: const StandardMessageCodec(),
           onPlatformViewCreated: onCreated,
+          gestureRecognizers: gestureRecognizers ?? const {},
         );
       default:
         throw UnsupportedError(

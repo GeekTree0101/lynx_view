@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lynx_view_platform_interface/lynx_view_platform_interface.dart';
 
@@ -13,9 +15,26 @@ import 'lynx_view_controller.dart';
 /// intrinsic size, so wrap it in something that constrains it
 /// (`SizedBox`, `Expanded`, `AspectRatio`, ...).
 class LynxView extends StatefulWidget {
-  const LynxView({super.key, required this.controller});
+  const LynxView({
+    super.key,
+    required this.controller,
+    this.gestureRecognizers,
+  });
 
   final LynxViewController controller;
+
+  /// Gestures the embedded native view is allowed to win from Flutter.
+  ///
+  /// Leave this null and the native view only gets what no Flutter widget
+  /// claims: taps arrive, drags do not. A template that scrolls its own
+  /// content needs at least a drag recognizer here, e.g.
+  ///
+  /// ```dart
+  /// gestureRecognizers: {
+  ///   Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+  /// },
+  /// ```
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   @override
   State<LynxView> createState() => _LynxViewState();
@@ -37,6 +56,7 @@ class _LynxViewState extends State<LynxView> {
     return LynxViewPlatform.instance.buildView(
       creationParams: widget.controller.creationParams,
       onPlatformViewCreated: widget.controller.attach,
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 }

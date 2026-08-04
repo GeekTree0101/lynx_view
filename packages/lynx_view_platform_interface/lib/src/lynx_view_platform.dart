@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -43,9 +45,15 @@ abstract class LynxViewPlatform extends PlatformInterface {
   /// (`templateUrl`, `initData`, JSON-encodable). [onPlatformViewCreated]
   /// fires once the native view exists and [viewId] can be used with
   /// [reload], [sendEvent], [dispose] and [setEventHandler].
+  ///
+  /// [gestureRecognizers] decides which gestures the embedded native view is
+  /// allowed to win from Flutter. Without it the platform view only receives
+  /// what no Flutter widget claims — taps get through, but drags do not, so
+  /// anything scrollable inside the Lynx template will not scroll.
   Widget buildView({
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
+    Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
   }) {
     throw UnimplementedError('buildView() has not been implemented.');
   }

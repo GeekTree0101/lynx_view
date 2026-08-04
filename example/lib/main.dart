@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lynx_view/lynx_view.dart';
 
@@ -106,7 +108,16 @@ class _LynxDemoPageState extends State<LynxDemoPage> {
             flex: 3,
             child: ColoredBox(
               color: Colors.black12,
-              child: LynxView(controller: _controller),
+              child: LynxView(
+                controller: _controller,
+                // Without this the template's own scroll-view never receives
+                // drags — Flutter keeps them.
+                gestureRecognizers: {
+                  Factory<OneSequenceGestureRecognizer>(
+                    EagerGestureRecognizer.new,
+                  ),
+                },
+              ),
             ),
           ),
           Padding(
