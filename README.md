@@ -10,6 +10,7 @@ Wraps [LynxJS](https://lynxjs.org)'s native `LynxView` as a Flutter `PlatformVie
 - Runtime `reload()` — the hook an OTA/CodePush-style client uses to swap in a new bundle without recreating the widget.
 - Built-in `FlutterBridge` channel — JS &lt;-&gt; Dart messaging (`addJavaScriptChannel`/`sendEvent`) with **no native code required**.
 - Escape hatch for custom native modules (`LynxViewPlugin.registerNativeModule`) when you need something typed/native.
+- Memory-aware: the platform's memory-pressure signal is forwarded to Lynx automatically, and `LynxMemory.usage()` reports what each live view is actually holding.
 
 This package does **not** provide OTA/CodePush server infrastructure, bundle caching, or Web/Desktop/HarmonyOS support — see the techspec for scope boundaries.
 
@@ -19,7 +20,7 @@ This package does **not** provide OTA/CodePush server infrastructure, bundle cac
 
 ```yaml
 dependencies:
-  lynx_view: ^1.0.0
+  lynx_view: ^1.2.0
 ```
 
 ### 2. Android setup
@@ -109,6 +110,44 @@ Future<void> onNewBundleAvailable(String newTemplateUrl) async {
 ```
 
 If a reload fails, the previously rendered content stays on screen and `onLoadError` fires — no crash, no automatic rollback.
+
+### Memory
+
+A `LynxView` is not a cheap widget: each one owns an engine, a JS runtime, an
+element tree and its own image cache, and all of it lives in **your app's
+process** — unlike a `WKWebView`, whose content sits in a separate process the
+OS bills separately. Two things follow from that, and the package handles the
+first for you.
+
+**Pressure is forwarded automatically.** Flutter surfaces the platform's
+memory warning (`applicationDidReceiveMemoryWarning` on iOS, `onTrimMemory` on
+Android); this package relays it to Lynx so live views shed their caches instead
+of holding on until the system kills the app. Nothing to wire up — the relay is
+active only while a `LynxView` is mounted. Trigger it yourself if you need to:
+
+```dart
+await LynxMemory.trim(LynxMemoryPressureLevel.critical);
+```
+
+**And you can ask where the memory went**, rather than inferring it from RSS
+(which measures something else — it counts mapped shared libraries, and can run
+well above the footprint the OS actually holds you to):
+
+```dart
+final usage = await LynxMemory.usage();
+usage.appBytes;                     // the app's physical footprint
+usage.totalBytes;                   // what Lynx accounts for within it
+usage.elementBytes;                 // element tree
+usage.viewBytes;                    // platform views Lynx created
+usage.mainThreadRuntimeBytes;       // main-thread JS (PrimJS)
+usage.backgroundThreadRuntimeBytes; // background JS — JSC on iOS
+usage.instances;                    // the same, per live view
+```
+
+Disposing matters more than instance count. A handful of views is a few percent
+of a modern phone's budget, but a view that never releases grows without bound —
+so call `controller.dispose()`, and prefer dropping views you can cheaply
+rebuild over keeping them alive off-screen.
 
 See the `example/` app for a complete, runnable demo.
 
