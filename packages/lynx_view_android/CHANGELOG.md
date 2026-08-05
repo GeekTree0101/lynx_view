@@ -1,5 +1,9 @@
 ## 1.1.0
 
+* **Fixed: R8 broke consuming apps' release builds** on a dangling Gson
+  reference inside Lynx. Ships `consumer-rules.pro` with `-dontwarn
+  com.google.gson.**`.
+
 * Fixed `LynxView.destroy()` running twice on the same instance — the channel
   teardown and the engine's `PlatformView.dispose()` both reach it.
 * Answer `trimMemory` and `queryMemoryUsage` on the plugin channel, forwarding

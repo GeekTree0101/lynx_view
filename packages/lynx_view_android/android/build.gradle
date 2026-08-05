@@ -47,6 +47,10 @@ android {
         // Lynx SDK 4.0.0 targets "Android 5.0 (API 21) or newer" per the
         // official requirements (github.com/lynx-family/lynx README).
         minSdk = 21
+
+        // Shipped to consuming apps so their release builds survive R8 — see
+        // the file for what breaks without it.
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     dependencies {

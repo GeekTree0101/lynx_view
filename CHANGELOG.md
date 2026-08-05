@@ -1,5 +1,11 @@
 ## 1.1.0
 
+* **Fixed: Android release builds failed with R8.** Lynx references Gson from
+  `LynxEnv.GetNativeEnvDebugDescription()` without depending on it, so every
+  consuming app's `assembleRelease` died with `Missing class
+  com.google.gson.Gson`. The plugin now ships a consumer ProGuard rule, so apps
+  need no workaround of their own. Debug builds never showed this.
+
 * **Fixed (iOS): the native `LynxView` was never explicitly torn down.** Release
   was left entirely to ARC, and because Lynx holds internal references of its
   own the engine could outlive `dispose()` indefinitely — memory measured after
