@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.2.0
 
 * **Fixed: R8 broke consuming apps' release builds** on a dangling Gson
   reference inside Lynx. Ships `consumer-rules.pro` with `-dontwarn

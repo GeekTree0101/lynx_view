@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.2.0
 
 * Fixed: the native `LynxView` is now released with Lynx's own `clearForDestroy`
   instead of relying on ARC alone, which could leave the engine alive well past

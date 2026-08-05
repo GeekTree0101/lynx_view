@@ -1,4 +1,4 @@
-## 1.1.0
+## 1.2.0
 
 * **Fixed: Android release builds failed with R8.** Lynx references Gson from
   `LynxEnv.GetNativeEnvDebugDescription()` without depending on it, so every
