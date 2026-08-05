@@ -1,3 +1,7 @@
+## 1.2.1
+
+* Removed the maintainer's Apple `DEVELOPMENT_TEAM` from the example project.
+
 ## 1.2.0
 
 * Fixed: the native `LynxView` is now released with Lynx's own `clearForDestroy`

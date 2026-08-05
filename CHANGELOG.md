@@ -1,3 +1,11 @@
+## 1.2.1
+
+* Removed the maintainer's Apple `DEVELOPMENT_TEAM` from the example project —
+  it served no purpose in a template and only produced signing errors for
+  anyone building the example under their own account.
+* README now documents the memory APIs added in 1.2.0 and points at
+  `docs/ko/memory.md`; the 1.2.0 listing still described the 1.0.0 surface.
+
 ## 1.2.0
 
 * **Fixed: Android release builds failed with R8.** Lynx references Gson from
