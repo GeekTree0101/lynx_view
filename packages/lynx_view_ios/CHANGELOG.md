@@ -1,3 +1,8 @@
+## 1.3.0
+
+* Version aligned across the federated packages so they move in lockstep; no
+  functional change in this one.
+
 ## 1.2.1
 
 * Removed the maintainer's Apple `DEVELOPMENT_TEAM` from the example project.

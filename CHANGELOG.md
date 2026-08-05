@@ -1,4 +1,4 @@
-## 1.2.2
+## 1.3.0
 
 * The example app now uses `com.example.*` identifiers, the same as a fresh
   `flutter create`. It carried the maintainer's own reverse-DNS prefix for no

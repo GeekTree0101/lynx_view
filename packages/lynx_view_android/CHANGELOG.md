@@ -1,4 +1,4 @@
-## 1.2.1
+## 1.3.0
 
 * The example app now uses `com.example.*` identifiers instead of the
   maintainer's own reverse-DNS prefix.
