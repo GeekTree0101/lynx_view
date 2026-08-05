@@ -67,6 +67,14 @@ object LynxViewPlugin {
         }
     }
 
+    /**
+     * Whether the real `LynxEnv` has been created yet. Callers that only want
+     * to talk to an existing env (rather than bring one into being) check this
+     * first — see the memory-pressure handler in `LynxViewAndroidPlugin`.
+     */
+    @JvmStatic
+    fun isInitialized(): Boolean = synchronized(this) { initialized }
+
     /** Test-only: names still queued (i.e. not yet flushed by [ensureInitialized]). */
     internal fun pendingModuleNamesForTesting(): List<String> =
         synchronized(this) { pendingModules.map { it.first } }

@@ -46,6 +46,11 @@ class _FakeLynxViewPlatform extends LynxViewPlatform {
   Future<void> dispose(int viewId) async {
     calls.add('dispose:$viewId');
   }
+
+  @override
+  Future<void> trimMemory(LynxMemoryPressureLevel level) async {
+    calls.add('trimMemory:${level.value}');
+  }
 }
 
 void main() {

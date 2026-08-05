@@ -86,4 +86,21 @@ abstract class LynxViewPlatform extends PlatformInterface {
   Future<void> dispose(int viewId) {
     throw UnimplementedError('dispose() has not been implemented.');
   }
+
+  /// Asks Lynx to give memory back at the given pressure [level].
+  ///
+  /// Process-wide rather than per-view: Lynx dispatches the signal from
+  /// `LynxEnv` to every live instance at once, so there is no `viewId`.
+  Future<void> trimMemory(LynxMemoryPressureLevel level) {
+    throw UnimplementedError('trimMemory() has not been implemented.');
+  }
+
+  /// Asks Lynx what it is currently holding, broken down per instance.
+  ///
+  /// Collection is asynchronous and bounded by [timeoutMs] (Lynx defaults to
+  /// 2000ms when this is null or non-positive); a timeout still returns
+  /// whatever was gathered, flagged via [LynxMemoryUsage.timedOut].
+  Future<LynxMemoryUsage> queryMemoryUsage({int? timeoutMs}) {
+    throw UnimplementedError('queryMemoryUsage() has not been implemented.');
+  }
 }

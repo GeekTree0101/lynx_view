@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lynx_view_platform_interface/lynx_view_platform_interface.dart';
 
+import 'lynx_memory.dart';
 import 'lynx_view_controller.dart';
 
 /// Embeds LynxJS (https://lynxjs.org) as a native platform view.
@@ -41,6 +42,20 @@ class LynxView extends StatefulWidget {
 }
 
 class _LynxViewState extends State<LynxView> {
+  @override
+  void initState() {
+    super.initState();
+    // Only worth listening while a native view actually exists — see
+    // [LynxMemoryPressureRelay].
+    LynxMemoryPressureRelay.retain();
+  }
+
+  @override
+  void dispose() {
+    LynxMemoryPressureRelay.release();
+    super.dispose();
+  }
+
   @override
   void didUpdateWidget(covariant LynxView oldWidget) {
     super.didUpdateWidget(oldWidget);

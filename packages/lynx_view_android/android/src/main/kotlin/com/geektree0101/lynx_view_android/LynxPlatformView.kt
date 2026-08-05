@@ -146,7 +146,17 @@ internal class LynxPlatformView(
         return true
     }
 
+    /**
+     * Teardown is reached from two independent paths and both fire in the
+     * normal flow: the Dart controller's explicit `dispose()` arrives over the
+     * channel, and the engine calls [dispose] when the widget leaves the tree.
+     * Without this flag `lynxView.destroy()` runs twice on the same instance.
+     */
+    private var isDisposed = false
+
     private fun disposeInternal() {
+        if (isDisposed) return
+        isDisposed = true
         pendingLoad = null
         LynxViewRegistry.unregister(viewId)
         channel.setMethodCallHandler(null)

@@ -1,3 +1,11 @@
+## 1.1.0
+
+* Fixed: the native `LynxView` is now released with Lynx's own `clearForDestroy`
+  instead of relying on ARC alone, which could leave the engine alive well past
+  `dispose()`.
+* Answer `trimMemory` and `queryMemoryUsage` on the plugin channel, forwarding
+  to `LynxEnv.trimMemory` and `LynxMemoryUsageQuery`.
+
 ## 1.0.1
 
 * Keep Lynx's viewport in sync with the size Flutter gives the platform view. A platform view is created before its size is known, and Lynx was never told the real bounds that arrived afterwards — so templates laid out against a zero viewport, which collapsed `flex: 1` to nothing and left `%`/`vh` sizes unresolved.

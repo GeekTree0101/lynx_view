@@ -11,6 +11,11 @@ import 'types.dart';
 const String _kViewType = 'com.geektree0101.lynx_view/LynxView';
 const String _kInstanceChannelPrefix = 'com.geektree0101.lynx_view/instance_';
 
+/// Process-wide channel for calls that aren't about one particular view.
+/// Answered by the plugin registrant on each platform, not by a platform view.
+const MethodChannel _kPluginChannel =
+    MethodChannel('com.geektree0101.lynx_view/plugin');
+
 /// Default [LynxViewPlatform] implementation, backed by Flutter's
 /// [AndroidView]/[UiKitView] platform views plus a per-instance
 /// [MethodChannel] keyed by the platform-assigned `viewId`.
@@ -151,4 +156,65 @@ class MethodChannelLynxView extends LynxViewPlatform {
     if (channel == null) return;
     await channel.invokeMethod<void>('dispose');
   }
+
+  @override
+  Future<void> trimMemory(LynxMemoryPressureLevel level) {
+    return _kPluginChannel.invokeMethod<void>(
+      'trimMemory',
+      <String, dynamic>{'level': level.value},
+    );
+  }
+
+  @override
+  Future<LynxMemoryUsage> queryMemoryUsage({int? timeoutMs}) async {
+    final Map<dynamic, dynamic>? raw =
+        await _kPluginChannel.invokeMethod<Map<dynamic, dynamic>>(
+      'queryMemoryUsage',
+      <String, dynamic>{'timeoutMs': timeoutMs},
+    );
+    if (raw == null) {
+      throw StateError('queryMemoryUsage returned no result');
+    }
+    return _decodeUsage(raw);
+  }
+
+  LynxMemoryUsage _decodeUsage(Map<dynamic, dynamic> m) {
+    final List<dynamic> rawInstances =
+        (m['instances'] as List<dynamic>?) ?? const <dynamic>[];
+    return LynxMemoryUsage(
+      totalBytes: _int(m['totalBytes']),
+      appBytes: _int(m['appBytes']),
+      ratioToApp: (m['ratioToApp'] as num?)?.toDouble() ?? 0,
+      elementBytes: _int(m['elementBytes']),
+      elementNodeCount: _int(m['elementNodeCount']),
+      viewBytes: _int(m['viewBytes']),
+      mainThreadRuntimeBytes: _int(m['mainThreadRuntimeBytes']),
+      backgroundThreadRuntimeBytes: _int(m['backgroundThreadRuntimeBytes']),
+      expectedInstanceCount: _int(m['expectedInstanceCount']),
+      completedInstanceCount: _int(m['completedInstanceCount']),
+      timedOut: m['timedOut'] == true,
+      instances: rawInstances
+          .cast<Map<dynamic, dynamic>>()
+          .map(_decodeInstance)
+          .toList(growable: false),
+    );
+  }
+
+  LynxInstanceMemory _decodeInstance(Map<dynamic, dynamic> m) {
+    return LynxInstanceMemory(
+      instanceId: _int(m['instanceId']),
+      url: m['url'] as String?,
+      totalBytes: _int(m['totalBytes']),
+      elementBytes: _int(m['elementBytes']),
+      elementNodeCount: _int(m['elementNodeCount']),
+      viewBytes: _int(m['viewBytes']),
+      mainThreadRuntimeBytes: _int(m['mainThreadRuntimeBytes']),
+      backgroundThreadRuntimeBytes: _int(m['backgroundThreadRuntimeBytes']),
+      backgroundRuntimeGroupId: m['backgroundRuntimeGroupId'] as String?,
+    );
+  }
+
+  /// Byte counts cross the channel as `int` on one platform and `long` on the
+  /// other; both arrive as `num` here.
+  int _int(dynamic value) => (value as num?)?.toInt() ?? 0;
 }

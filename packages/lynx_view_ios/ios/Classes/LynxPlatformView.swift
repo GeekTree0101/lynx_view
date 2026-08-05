@@ -113,11 +113,36 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
         return true
     }
 
+    /// `FlutterPlatformView` has no teardown hook of its own — unlike Android's
+    /// `PlatformView.dispose()`, the engine simply releases this object. So the
+    /// only deterministic moment to release Lynx's resources is the Dart
+    /// controller's explicit `dispose()`, and `deinit` is the backstop for when
+    /// that never comes. Both funnel here, hence the flag.
+    private var isDisposed = false
+
     private func disposeInternal() {
+        if isDisposed { return }
+        isDisposed = true
         LynxViewRegistry.shared.unregister(viewId: Int(viewId))
         channel.setMethodCallHandler(nil)
         lynxView.removeLifecycleClient(self)
         pendingLoad = nil
+        // Releasing the last reference is not enough to reclaim the engine
+        // promptly: Lynx holds internal references of its own, and ARC only
+        // runs `deinit` once every one of them is gone. `clearForDestroy` is
+        // Lynx's own teardown entry point and is what makes release
+        // deterministic here, mirroring `destroy()` on Android.
+        //
+        // The channel path always lands on the platform thread, but `deinit`
+        // runs wherever the last release happened — so hop when needed. The
+        // local binding (rather than `self`) is what keeps the view alive
+        // until the block runs; `self` may already be gone.
+        let view = lynxView
+        if Thread.isMainThread {
+            view.clearForDestroy()
+        } else {
+            DispatchQueue.main.async { view.clearForDestroy() }
+        }
     }
 
     deinit {
