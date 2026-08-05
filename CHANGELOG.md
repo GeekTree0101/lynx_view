@@ -1,3 +1,9 @@
+## 1.2.2
+
+* The example app now uses `com.example.*` identifiers, the same as a fresh
+  `flutter create`. It carried the maintainer's own reverse-DNS prefix for no
+  reason, which is not what someone cloning the example wants to inherit.
+
 ## 1.2.1
 
 * Removed the maintainer's Apple `DEVELOPMENT_TEAM` from the example project —

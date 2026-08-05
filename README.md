@@ -20,7 +20,7 @@ This package does **not** provide OTA/CodePush server infrastructure, bundle cac
 
 ```yaml
 dependencies:
-  lynx_view: ^1.2.1
+  lynx_view: ^1.2.2
 ```
 
 ### 2. Android setup

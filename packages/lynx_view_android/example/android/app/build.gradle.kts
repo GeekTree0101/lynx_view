@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.geektree0101.lynx_view_android_example"
+    namespace = "com.example.lynx_view_android_example"
     compileSdk = flutter.compileSdkVersion
     // Lynx SDK 4.0.0's native libraries were built against NDK 27.0.12077973;
     // Flutter's bundled default (flutter.ndkVersion) is older and mismatches.
@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.geektree0101.lynx_view_android_example"
+        applicationId = "com.example.lynx_view_android_example"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

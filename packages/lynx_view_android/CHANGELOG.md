@@ -1,3 +1,8 @@
+## 1.2.1
+
+* The example app now uses `com.example.*` identifiers instead of the
+  maintainer's own reverse-DNS prefix.
+
 ## 1.2.0
 
 * **Fixed: R8 broke consuming apps' release builds** on a dangling Gson

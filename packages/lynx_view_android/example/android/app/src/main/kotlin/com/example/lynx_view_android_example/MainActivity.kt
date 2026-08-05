@@ -1,4 +1,4 @@
-package com.geektree0101.lynx_view_android_example
+package com.example.lynx_view_android_example
 
 import io.flutter.embedding.android.FlutterActivity
 
