@@ -1,3 +1,24 @@
+## 1.4.0
+
+* XElement's elements — `<input>`, `<textarea>`, `<svg>`, `<overlay>`,
+  `<viewpager>`, `<refresh>` and the rest — now work. Lynx's core registers
+  only 13 UI elements and leaves everything else to XElement, which this
+  package did not ship. A template using `<input>` loaded successfully,
+  rendered an empty box, and never took focus, with nothing in the log:
+  Lynx skips tags it does not recognise silently.
+* Fixed release builds on Android, which failed in R8 once XElement was
+  added. Two of its artifacts reference libraries they do not declare —
+  Fresco, from the remote-image path of `<svg>`, and the Serval markdown
+  engine, which is not published to Maven at all.
+* `<markdown>` remains unsupported on both platforms. On iOS its subspec
+  pulls statically linked binaries that CocoaPods refuses under the
+  `use_frameworks!` every Flutter Podfile declares; on Android its engine
+  does not exist as an artifact. The dependency is excluded rather than
+  shipped as dead code.
+* `<svg>` renders inline sources out of the box. Loading one from a remote
+  URL goes through Fresco, which an app wanting that must add itself —
+  Lynx expects the host to supply its own image service.
+
 ## 1.3.0
 
 * The example app now uses `com.example.*` identifiers, the same as a fresh

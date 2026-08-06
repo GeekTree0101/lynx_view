@@ -31,7 +31,9 @@ internal class LynxPlatformView(
     creationParams: Map<String?, Any?>?,
 ) : PlatformView, MethodChannel.MethodCallHandler {
 
-    private val lynxView: LynxView = LynxViewBuilder().build(context)
+    private val lynxView: LynxView = LynxViewBuilder()
+        .also { XElementSupport.addBehaviorsIfPresent(it) }
+        .build(context)
     private val channel = MethodChannel(binaryMessenger, "$INSTANCE_CHANNEL_PREFIX$viewId")
     private val mainHandler = Handler(Looper.getMainLooper())
 

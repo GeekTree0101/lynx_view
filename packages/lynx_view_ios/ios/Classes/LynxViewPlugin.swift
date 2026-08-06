@@ -46,6 +46,11 @@ public final class LynxViewPlugin: NSObject {
         defer { lock.unlock() }
         if initialized { return }
 
+        // Must precede the first LynxView: XElement's elements are otherwise
+        // linked but unregistered, so a template using <input> renders an
+        // empty box that never takes focus. See LynxXElementRegistry.m.
+        LynxXElementRegistry.registerAvailableElements()
+
         let config = LynxConfig(provider: RemoteTemplateProvider())
         LynxEnv.sharedInstance().prepareConfig(config)
         config.register(FlutterBridgeModule.self, withName: FlutterBridgeModule.name)

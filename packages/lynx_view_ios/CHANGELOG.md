@@ -1,3 +1,15 @@
+## 1.4.0
+
+* Registers XElement's elements so `<input>` and friends actually work.
+  The elements ship in one set of subspecs and the code that binds them to
+  tag names ships in another, `XElement/Behavior` — which depends on
+  `XElement/Markdown`, which pulls the statically linked `ServalMarkdown`
+  and `LynxTextra`. CocoaPods rejects those under `use_frameworks!`, so the
+  classes linked but stayed unreachable. `LynxXElementRegistry` now makes
+  the same `LynxComponentRegistry` calls the upstream macros expand to,
+  looking classes up by name so an excluded subspec registers nothing
+  rather than failing to link.
+
 ## 1.3.0
 
 * Version aligned across the federated packages so they move in lockstep; no

@@ -17,6 +17,34 @@ Wraps LynxJS's native LynxView as a Flutter PlatformView (iOS side).
   s.dependency 'Flutter'
   s.dependency 'Lynx', '4.0.0'
   s.dependency 'PrimJS', '4.0.0'
+  # XElement — the extended element library. The core Lynx pod registers only
+  # 13 UI elements; without this, a template using <input>, <svg>, <overlay>
+  # and friends renders nothing at all.
+  #
+  # Subspecs rather than the umbrella pod on purpose: XElement/Markdown pulls
+  # ServalMarkdown, which pulls the statically linked LynxTextra, and CocoaPods
+  # refuses that under the `use_frameworks!` every Flutter Podfile declares:
+  #
+  #   [!] The 'Pods-Runner' target has transitive dependencies that include
+  #       statically linked binaries: (ServalMarkdown and LynxTextra)
+  #
+  # The catch is that the element subspecs ship the classes but not the
+  # registration — every LynxUI*AutoRegistry.m lives in XElement/Behavior,
+  # which depends on Markdown and so cannot be pulled in either. Without them
+  # the classes are linked, dead, and unreachable: <input> compiles, renders
+  # nothing, and never takes focus.
+  #
+  # So the registration is done in-package instead, minus the Markdown one —
+  # see Classes/LynxXElementRegistry.m, which the plugin runs before it builds
+  # its first LynxView.
+  s.dependency 'XElement/Input', '4.0.0'
+  s.dependency 'XElement/BlurView', '4.0.0'
+  s.dependency 'XElement/Overlay', '4.0.0'
+  s.dependency 'XElement/ScrollCoordinator', '4.0.0'
+  s.dependency 'XElement/ViewPager', '4.0.0'
+  s.dependency 'XElement/WebView', '4.0.0'
+  s.dependency 'XElement/SVG', '4.0.0'
+  s.dependency 'XElement/Refresh', '4.0.0'
   # Lynx itself supports iOS 10+, but Flutter's own engine requires 12.0+ —
   # that's the binding floor here, not Lynx's.
   s.platform = :ios, '12.0'

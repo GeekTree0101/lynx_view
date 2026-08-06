@@ -1,3 +1,7 @@
+## 1.4.0
+
+* Version bump only, to stay in lockstep with the other packages.
+
 ## 1.3.0
 
 * Version aligned across the federated packages so they move in lockstep; no

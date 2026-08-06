@@ -61,6 +61,19 @@ android {
         api "org.lynxsdk.lynx:lynx-jssdk:4.0.0"
         api "org.lynxsdk.lynx:lynx-trace:4.0.0"
         api "org.lynxsdk.lynx:primjs:4.0.0"
+        // XElement — the extended element library (input, textarea, svg, overlay,
+        // ...). The core Lynx artifact registers only 13 UI elements; without
+        // this, templates using anything outside that set render nothing.
+        //
+        // `xelement-markdown` is dropped: it references the Serval markdown
+        // engine (`com.lynx.markdown.*`) without declaring a dependency on it,
+        // and that engine is not published to Maven at all — so `<markdown>`
+        // cannot work here no matter what, and shipping the classes only adds
+        // dead code plus a dangling reference for R8 to trip over. The iOS
+        // podspec excludes the matching subspec for the same reason.
+        api("org.lynxsdk.lynx:xelement:4.0.0") {
+            exclude group: "org.lynxsdk.lynx", module: "xelement-markdown"
+        }
 
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
