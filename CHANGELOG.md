@@ -1,3 +1,14 @@
+## 1.6.0
+
+* Recoverable errors no longer arrive as `onLoadError`. Lynx reports every
+  error through one native callback — a template that failed to load, but
+  also an `<image>` src that 404'd or a runtime warning. 1.5.0's image
+  pipeline made the latter kind common, and consumers treating
+  `onLoadError` as fatal started killing whole screens over one missing
+  thumbnail. Fatal errors (LynxError's own `isFatal`) keep firing
+  `onLoadError`; everything else goes to the new optional
+  `onReceivedError` callback, for logging rather than teardown.
+
 ## 1.5.0
 
 * `<image>` now renders remote sources. Lynx delegates all image fetching,

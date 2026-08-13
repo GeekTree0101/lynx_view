@@ -164,8 +164,21 @@ extension LynxPlatformView: LynxViewLifecycle {
     }
 
     func lynxView(_ view: LynxView, didRecieveError error: Error) {
+        // Lynx reports every error through this one callback — a template
+        // that failed to load, but also an <image> src that 404'd or a
+        // runtime warning. Only the fatal ones mean the view is broken;
+        // forwarding the rest as "onLoadError" made consumers kill screens
+        // over a single missing thumbnail. LynxError knows the difference.
+        let fatal = (error as? LynxError)?.isFatal ?? true
         let nsError = error as NSError
         DispatchQueue.main.async { [self] in
+            if !fatal {
+                channel.invokeMethod(
+                    "onReceivedError",
+                    arguments: ["code": "\(nsError.code)", "message": nsError.localizedDescription]
+                )
+                return
+            }
             if finishLoad() { return }
             channel.invokeMethod(
                 "onLoadError",

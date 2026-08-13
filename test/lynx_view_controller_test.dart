@@ -131,6 +131,24 @@ void main() {
     expect(capturedError?.code, 'x');
   });
 
+  test('onReceivedError routes to its own callback, not onLoadError', () {
+    LynxLoadError? fatal;
+    LynxLoadError? recoverable;
+
+    final controller = LynxViewController(
+      templateUrl: 'https://a.example/1.bundle',
+      onLoadError: (e) => fatal = e,
+      onReceivedError: (e) => recoverable = e,
+    );
+    controller.attach(10);
+
+    fakePlatform.handlers[10]!
+        .onReceivedError(const LynxLoadError(code: '301', message: 'image'));
+
+    expect(recoverable?.code, '301');
+    expect(fatal, isNull);
+  });
+
   test('dispose() calls the platform once and is idempotent', () async {
     final controller = LynxViewController(templateUrl: 'https://a.example/1.bundle');
     controller.attach(11);

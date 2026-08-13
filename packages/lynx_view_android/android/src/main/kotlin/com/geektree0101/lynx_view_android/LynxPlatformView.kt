@@ -59,7 +59,19 @@ internal class LynxPlatformView(
         }
 
         override fun onReceivedError(error: LynxError) {
+            // Lynx reports every error here — a template that failed to load,
+            // but also an <image> src that 404'd or a runtime warning. Only
+            // the fatal ones mean the view is broken; forwarding the rest as
+            // "onLoadError" made consumers kill screens over a single missing
+            // thumbnail. LynxError knows the difference.
             mainHandler.post {
+                if (!error.isFatal) {
+                    channel.invokeMethod(
+                        "onReceivedError",
+                        mapOf("code" to error.errorCode.toString(), "message" to error.msg),
+                    )
+                    return@post
+                }
                 if (finishLoad()) return@post
                 channel.invokeMethod(
                     "onLoadError",

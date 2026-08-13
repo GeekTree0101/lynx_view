@@ -1,3 +1,11 @@
+## 1.6.0
+
+* Splits Lynx error reporting by `LynxError.isFatal`: fatal errors keep
+  firing `onLoadError`, recoverable ones (image fetch failures, runtime
+  warnings) now fire `onReceivedError` and no longer complete a pending
+  load. Before this, one 404'd `<image>` killed screens that treat
+  `onLoadError` as fatal.
+
 ## 1.5.0
 
 * Ships and registers the image service, so `<image>` renders remote
