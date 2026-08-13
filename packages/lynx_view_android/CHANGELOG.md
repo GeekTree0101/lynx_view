@@ -1,3 +1,13 @@
+## 1.5.0
+
+* Ships and registers the image service, so `<image>` renders remote
+  sources. Lynx delegates all fetch/decode/cache to a registered service
+  and silently renders nothing without one. `lynx-service-image` (built on
+  Fresco, versions from the official integration guide) is registered
+  before `LynxEnv` init, the order the guide uses.
+* Fresco is initialized only if the host app has not already done so —
+  initializing twice resets Fresco's caches.
+
 ## 1.4.0
 
 * Hands XElement's behaviors to every `LynxViewBuilder`, so `<input>` and

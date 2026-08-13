@@ -75,6 +75,22 @@ android {
             exclude group: "org.lynxsdk.lynx", module: "xelement-markdown"
         }
 
+        // Image service — Lynx's <image> does not fetch or decode anything by
+        // itself; it delegates to a registered image service, and without one
+        // remote sources silently render nothing (same failure mode as the
+        // unregistered XElement tags above). Fresco is what LynxImageService
+        // is built on, and the versions are the ones the official integration
+        // guide pairs with this SDK line.
+        //
+        // `implementation`, not `api`: hosts talk to <image> through Lynx
+        // templates, never through Fresco types.
+        implementation "org.lynxsdk.lynx:lynx-service-image:4.0.0"
+        implementation "com.facebook.fresco:fresco:2.3.0"
+        implementation "com.facebook.fresco:animated-gif:2.3.0"
+        implementation "com.facebook.fresco:animated-webp:2.3.0"
+        implementation "com.facebook.fresco:webpsupport:2.3.0"
+        implementation "com.facebook.fresco:animated-base:2.3.0"
+
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
     }

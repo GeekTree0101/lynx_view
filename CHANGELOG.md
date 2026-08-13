@@ -1,3 +1,18 @@
+## 1.5.0
+
+* `<image>` now renders remote sources. Lynx delegates all image fetching,
+  decoding and caching to a host-registered image service, and renders
+  nothing — silently — when there is none; this package never shipped one,
+  so every remote `src` came out as an empty box. Android now ships
+  `lynx-service-image` on Fresco and registers it before `LynxEnv` init;
+  iOS pulls `LynxService/Image` (SDWebImage-backed), which self-registers
+  at load.
+* Images are cached by those native libraries' own memory and disk caches.
+  Nothing is shared with the host app's image stack (e.g. Flutter's
+  `CachedNetworkImage`) — a URL seen by both sides is fetched once per side.
+* On Android, Fresco is initialized by the plugin only if the host app has
+  not already done so — initializing twice resets Fresco's caches.
+
 ## 1.4.0
 
 * XElement's elements — `<input>`, `<textarea>`, `<svg>`, `<overlay>`,
