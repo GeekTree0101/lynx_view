@@ -2,8 +2,14 @@ package com.geektree0101.lynx_view_android
 
 import android.app.Application
 import android.content.Context
+import com.facebook.drawee.backends.pipeline.Fresco
+import com.facebook.imagepipeline.core.ImagePipelineConfig
+import com.facebook.imagepipeline.memory.PoolConfig
+import com.facebook.imagepipeline.memory.PoolFactory
 import com.lynx.jsbridge.LynxModule
+import com.lynx.service.image.LynxImageService
 import com.lynx.tasm.LynxEnv
+import com.lynx.tasm.service.LynxServiceCenter
 
 /**
  * Public entry point for apps that need a custom native module reachable
@@ -52,8 +58,29 @@ object LynxViewPlugin {
     fun ensureInitialized(context: Context) {
         synchronized(this) {
             if (initialized) return
+            val appContext = context.applicationContext
+
+            // Image service, registered before LynxEnv.init the way the
+            // official integration guide orders it. Without this, <image>
+            // silently renders nothing — Lynx delegates all fetch/decode to
+            // the service and logs nothing when there is none.
+            //
+            // Fresco may already be initialized by the host app (it is public
+            // API of a library the host can use directly); initializing twice
+            // resets its caches, so guard it.
+            if (!Fresco.hasBeenInitialized()) {
+                val poolFactory = PoolFactory(PoolConfig.newBuilder().build())
+                Fresco.initialize(
+                    appContext,
+                    ImagePipelineConfig.newBuilder(appContext)
+                        .setPoolFactory(poolFactory)
+                        .build(),
+                )
+            }
+            LynxServiceCenter.inst().registerService(LynxImageService.getInstance())
+
             LynxEnv.inst().init(
-                context.applicationContext as Application,
+                appContext as Application,
                 /* nativeLibraryLoader = */ null,
                 /* templateProvider = */ RemoteTemplateProvider(),
                 /* behaviorBundle = */ null,

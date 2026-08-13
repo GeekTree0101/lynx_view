@@ -45,6 +45,14 @@ Wraps LynxJS's native LynxView as a Flutter PlatformView (iOS side).
   s.dependency 'XElement/WebView', '4.0.0'
   s.dependency 'XElement/SVG', '4.0.0'
   s.dependency 'XElement/Refresh', '4.0.0'
+  # Image service — Lynx's <image> does not fetch or decode anything by
+  # itself; it delegates to a registered image service, and without one
+  # remote sources silently render nothing. This subspec (SDWebImage-backed,
+  # versions pinned by the subspec itself) self-registers at load via the
+  # LynxServiceRegister macro in LynxImageService.m, so no registration code
+  # is needed here — unlike XElement, whose registry lives in a subspec we
+  # cannot pull (see above).
+  s.dependency 'LynxService/Image', '4.0.0'
   # Lynx itself supports iOS 10+, but Flutter's own engine requires 12.0+ —
   # that's the binding floor here, not Lynx's.
   s.platform = :ios, '12.0'

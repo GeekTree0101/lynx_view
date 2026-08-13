@@ -1,3 +1,12 @@
+## 1.5.0
+
+* Pulls `LynxService/Image` so `<image>` renders remote sources. Lynx
+  delegates all fetch/decode/cache to a registered image service and
+  silently renders nothing without one. Unlike XElement there is no
+  registration code to write: `LynxImageService.m` self-registers at load
+  via the `LynxServiceRegister` macro, and the subspec pins its own
+  SDWebImage versions.
+
 ## 1.4.0
 
 * Registers XElement's elements so `<input>` and friends actually work.

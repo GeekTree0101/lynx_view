@@ -16,10 +16,12 @@
 
 # XElement has two more of these, both on optional feature paths.
 #
-# `<svg>` can load a remote image, and when it does it goes through Fresco --
-# which XElement references but does not depend on, since Lynx expects the host
-# app to supply its own image service. An app that wants remote SVG sources
-# adds Fresco itself; one that does not never reaches the call.
+# `<svg>` can load a remote image, and when it does it goes through Fresco.
+# Since 1.5.0 the plugin ships Fresco itself (the image service is built on
+# it), so the classes are present at runtime; the -dontwarn stays because
+# XElement still references Fresco entry points that the shipped Fresco
+# modules do not all declare, and Fresco's own consumer rules do not cover
+# XElement's reflective reach.
 -dontwarn com.facebook.**
 #
 # `<markdown>` is excluded outright (see build.gradle), but the umbrella
