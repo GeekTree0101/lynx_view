@@ -23,6 +23,7 @@ class LynxViewController {
     this.initData,
     this.onLoadSuccess,
     this.onLoadError,
+    this.onReceivedError,
   }) : _templateUrl = templateUrl {
     _eventHandler = _LynxViewControllerEventHandler(this);
   }
@@ -38,6 +39,13 @@ class LynxViewController {
   /// (if any) is left on screen — this package never blanks the view or
   /// retries automatically.
   final LynxLoadErrorCallback? onLoadError;
+
+  /// Called for recoverable errors the view survived — an `<image>` src that
+  /// 404'd, a runtime warning. The rendered content stays on screen, so this
+  /// is for logging/observability, not for tearing the view down. Treating
+  /// these as fatal is exactly the failure mode this callback exists to
+  /// avoid: one missing thumbnail must not kill a whole screen.
+  final LynxLoadErrorCallback? onReceivedError;
 
   /// The template URL currently (successfully) rendered by the native view.
   /// Only updated once a [reload] actually succeeds — if it fails, this
@@ -156,6 +164,8 @@ class LynxViewController {
 
   void _handleLoadError(LynxLoadError error) => onLoadError?.call(error);
 
+  void _handleReceivedError(LynxLoadError error) => onReceivedError?.call(error);
+
   void _handleMessage(String channel, LynxMessage message) {
     _channels[channel]?.call(message);
   }
@@ -176,6 +186,10 @@ class _LynxViewControllerEventHandler implements LynxViewEventHandler {
 
   @override
   void onLoadError(LynxLoadError error) => _controller._handleLoadError(error);
+
+  @override
+  void onReceivedError(LynxLoadError error) =>
+      _controller._handleReceivedError(error);
 
   @override
   void onMessage(String channel, LynxMessage message) =>

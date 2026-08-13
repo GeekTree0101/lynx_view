@@ -89,6 +89,16 @@ class MethodChannelLynxView extends LynxViewPlatform {
           ),
         );
         return null;
+      case 'onReceivedError':
+        final Map<dynamic, dynamic> args =
+            call.arguments as Map<dynamic, dynamic>;
+        handler.onReceivedError(
+          LynxLoadError(
+            code: args['code'] as String? ?? 'unknown',
+            message: args['message'] as String? ?? '',
+          ),
+        );
+        return null;
       case 'onMessage':
         final Map<dynamic, dynamic> args =
             call.arguments as Map<dynamic, dynamic>;

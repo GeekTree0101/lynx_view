@@ -15,7 +15,15 @@ typedef LynxPlatformViewCreatedCallback = void Function(int viewId);
 /// a given `viewId` (load lifecycle + `FlutterBridge` messages).
 abstract class LynxViewEventHandler {
   void onLoadSuccess();
+
+  /// The template failed to load — the view is actually broken.
   void onLoadError(LynxLoadError error);
+
+  /// A recoverable error the view survived — an `<image>` src that 404'd, a
+  /// runtime warning. The rendered content stays on screen. Default is to
+  /// ignore, so existing handlers keep compiling; override to log or surface.
+  void onReceivedError(LynxLoadError error) {}
+
   void onMessage(String channel, LynxMessage message);
 }
 
