@@ -1,3 +1,9 @@
+## 1.7.1
+
+* Call `LynxFontFaceManager.shared().register(_:forName:)`, the names Swift
+  actually imports. 1.7.0 used the raw Objective-C selectors and did not
+  compile.
+
 ## 1.7.0
 
 * Registers the `fonts` creation param with Lynx before building the
