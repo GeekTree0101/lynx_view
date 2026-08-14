@@ -1,3 +1,9 @@
+## 1.6.0
+
+* `LynxFontAsset` — a font family name paired with the Flutter asset key of
+  the file that provides it. Rides in `creationParams` under `fonts`, so the
+  platform packages can register it before their native view exists.
+
 ## 1.5.0
 
 * `LynxViewEventHandler.onReceivedError` — recoverable errors (an `<image>`

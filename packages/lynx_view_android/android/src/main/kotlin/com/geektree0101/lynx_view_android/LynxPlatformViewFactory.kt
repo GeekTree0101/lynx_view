@@ -17,6 +17,10 @@ internal class LynxPlatformViewFactory(
         LynxViewPlugin.ensureInitialized(context)
         @Suppress("UNCHECKED_CAST")
         val creationParams = args as? Map<String?, Any?>
+        // Before the view exists, not after: Lynx reads its typeface cache
+        // while measuring text, and a font registered late shows up as a
+        // reflow (or not at all, if the template never re-measures).
+        (creationParams?.get("fonts") as? List<*>)?.let { FontAssets.register(context, it) }
         return LynxPlatformView(context, viewId, binaryMessenger, creationParams)
     }
 }

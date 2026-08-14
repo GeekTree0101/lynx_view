@@ -146,3 +146,34 @@ class LynxMessage {
   @override
   String toString() => 'LynxMessage(data: $data)';
 }
+
+/// A font file the host app ships as a Flutter asset, handed to Lynx so
+/// templates can select it by name.
+///
+/// Lynx resolves `font-family` by name and nothing else. It has no way to
+/// choose between several weights registered under one name — on Android
+/// every CSS weight from 500 up collapses into a single "bold" slot, and
+/// `@font-face` is keyed by family on both platforms. So one entry here is
+/// one weight of one typeface: register `Pretendard-Regular` and
+/// `Pretendard-Bold` under two [family] names and let the template pick
+/// between them with `font-family`, not `font-weight`.
+class LynxFontAsset {
+  const LynxFontAsset({required this.family, required this.assetPath});
+
+  /// The name templates ask for — `font-family: <family>` in CSS.
+  final String family;
+
+  /// A Flutter asset key, exactly as the host app's `pubspec.yaml` spells it
+  /// (e.g. `assets/fonts/Pretendard-Regular.otf`). Files declared under
+  /// `fonts:` are in the asset bundle too, so a typeface the Flutter side
+  /// already draws with does not need a second copy for Lynx.
+  final String assetPath;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+        'family': family,
+        'assetPath': assetPath,
+      };
+
+  @override
+  String toString() => 'LynxFontAsset(family: $family, assetPath: $assetPath)';
+}

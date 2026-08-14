@@ -170,4 +170,31 @@ void main() {
     await controller.dispose();
     expect(() => controller.reload('https://a.example/2.bundle'), throwsStateError);
   });
+
+  test('creationParams carries fonts, empty by default', () {
+    final plain = LynxViewController(templateUrl: 'https://a.example/1.bundle');
+    expect(plain.creationParams['fonts'], isEmpty);
+
+    final withFonts = LynxViewController(
+      templateUrl: 'https://a.example/1.bundle',
+      fonts: const <LynxFontAsset>[
+        LynxFontAsset(family: 'Pretendard-Regular', assetPath: 'assets/fonts/Pretendard-Regular.otf'),
+        LynxFontAsset(family: 'Pretendard-Bold', assetPath: 'assets/fonts/Pretendard-Bold.otf'),
+      ],
+    );
+
+    expect(
+      withFonts.creationParams['fonts'],
+      <Map<String, Object?>>[
+        <String, Object?>{
+          'family': 'Pretendard-Regular',
+          'assetPath': 'assets/fonts/Pretendard-Regular.otf',
+        },
+        <String, Object?>{
+          'family': 'Pretendard-Bold',
+          'assetPath': 'assets/fonts/Pretendard-Bold.otf',
+        },
+      ],
+    );
+  });
 }

@@ -1,3 +1,30 @@
+## 1.7.0
+
+* Fonts. A template could name a `font-family` and never get one: Lynx does
+  not load fonts by itself — `@font-face src: url()` is delegated to a
+  resource fetcher this package does not ship, and the built-in loader
+  understands only `local()` and inline `data:` URIs — so every custom family
+  fell through to the system font, silently, the same failure shape the image
+  service had before 1.5.0. `LynxViewController` now takes `fonts:`, a list of
+  `LynxFontAsset(family:, assetPath:)`, and the native side registers those
+  Flutter assets with Lynx while the view is being created, before the first
+  template load.
+* Nothing is fetched. A host app that already ships a typeface for its own UI
+  hands Lynx the same asset — no CDN to stand up, no download in front of the
+  first paint, and no drift between what Flutter draws and what a template
+  draws. Fonts declared under `fonts:` in the host's `pubspec.yaml` are in the
+  asset bundle already, so there is no second copy.
+* One family is one weight. Lynx resolves `font-family` by name alone: it has
+  no way to choose between weights registered under one name, and on Android
+  every CSS weight from 500 up collapses into a single "bold" slot
+  (`TextAttributes.isFontWeightBOLD`). Register `Pretendard-Regular` and
+  `Pretendard-Bold` as two families and let the template pick with
+  `font-family` rather than `font-weight`.
+* Registration is per-process and idempotent — re-listing a family on a later
+  view skips the decode rather than repeating it. A font that will not load is
+  skipped with a log; the screen keeps rendering in the system font, exactly
+  as it did before.
+
 ## 1.6.0
 
 * Recoverable errors no longer arrive as `onLoadError`. Lynx reports every
