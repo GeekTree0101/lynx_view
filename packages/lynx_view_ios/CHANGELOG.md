@@ -1,3 +1,13 @@
+## 1.7.0
+
+* Registers the `fonts` creation param with Lynx before building the
+  `LynxView`. Each asset is registered with CoreText and then handed to
+  `LynxFontFaceManager` under the host-chosen family name; Lynx uses that face
+  as-is and only resizes it, which is why one family is one weight.
+* Families are registered once per process. CoreText refuses the same graphics
+  font twice, and re-reading a CJK font per view creation is megabytes of
+  needless work.
+
 ## 1.6.0
 
 * Splits Lynx error reporting by `LynxError.isFatal`: fatal errors keep

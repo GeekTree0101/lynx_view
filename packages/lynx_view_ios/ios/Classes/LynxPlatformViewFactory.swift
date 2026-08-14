@@ -18,6 +18,12 @@ final class LynxPlatformViewFactory: NSObject, FlutterPlatformViewFactory {
         arguments args: Any?
     ) -> FlutterPlatformView {
         LynxViewPlugin.ensureInitialized()
+        // Before the view exists, not after: Lynx resolves the typeface while
+        // measuring text, and a font registered late shows up as a reflow (or
+        // not at all, if the template never re-measures).
+        if let params = args as? [String: Any], let fonts = params["fonts"] as? [Any] {
+            FontAssets.register(fonts)
+        }
         return LynxPlatformView(frame: frame, viewId: viewId, arguments: args, binaryMessenger: messenger)
     }
 

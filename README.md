@@ -9,6 +9,7 @@ Wraps [LynxJS](https://lynxjs.org)'s native `LynxView` as a Flutter `PlatformVie
 - Renders a remote Lynx bundle (`templateUrl`) inside a Flutter widget, Android and iOS.
 - Runtime `reload()` — the hook an OTA/CodePush-style client uses to swap in a new bundle without recreating the widget.
 - Built-in `FlutterBridge` channel — JS &lt;-&gt; Dart messaging (`addJavaScriptChannel`/`sendEvent`) with **no native code required**.
+- Custom fonts from the host app's own assets (`fonts:`) — registered before the first paint, with nothing fetched over the network.
 - Escape hatch for custom native modules (`LynxViewPlugin.registerNativeModule`) when you need something typed/native.
 - Memory-aware: the platform's memory-pressure signal is forwarded to Lynx automatically, and `LynxMemory.usage()` reports what each live view is actually holding.
 
@@ -82,6 +83,31 @@ class _LynxScreenState extends State<LynxScreen> {
   }
 }
 ```
+
+### Fonts
+
+Lynx does not load fonts by itself — a template naming a `font-family` nobody registered draws in the system font, silently. Hand it the files the host app already ships:
+
+```dart
+LynxViewController(
+  templateUrl: '...',
+  fonts: const [
+    LynxFontAsset(family: 'Pretendard-Regular', assetPath: 'assets/fonts/Pretendard-Regular.otf'),
+    LynxFontAsset(family: 'Pretendard-Bold',    assetPath: 'assets/fonts/Pretendard-Bold.otf'),
+  ],
+);
+```
+
+```css
+.title { font-family: Pretendard-Bold, sans-serif; }
+.body  { font-family: Pretendard-Regular, sans-serif; }
+```
+
+`assetPath` is a Flutter asset key exactly as `pubspec.yaml` spells it. Files declared under `fonts:` are in the asset bundle too, so a typeface the Flutter side already draws with needs no second copy.
+
+**One family is one weight.** Lynx resolves `font-family` by name alone — it cannot pick between weights registered under one name, and on Android every CSS weight from 500 up collapses into a single "bold" slot. Give each weight its own family and select with `font-family`, not `font-weight`.
+
+Registration happens natively while the view is created, so the first paint already has the font. It is per-process and idempotent; a font that will not load is skipped with a log and the screen keeps rendering in the system font.
 
 ### JS &lt;-&gt; Dart messaging without native code
 

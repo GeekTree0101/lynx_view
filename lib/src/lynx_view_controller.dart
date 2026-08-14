@@ -21,6 +21,7 @@ class LynxViewController {
   LynxViewController({
     required String templateUrl,
     this.initData,
+    this.fonts = const <LynxFontAsset>[],
     this.onLoadSuccess,
     this.onLoadError,
     this.onReceivedError,
@@ -30,6 +31,19 @@ class LynxViewController {
 
   /// The data passed to the JS bundle as `initData` on the initial load.
   final Map<String, dynamic>? initData;
+
+  /// Fonts made available to the template under their [LynxFontAsset.family]
+  /// names.
+  ///
+  /// Lynx draws with the system font unless the host hands it a typeface, so
+  /// a template that names a font nobody registered renders in the platform
+  /// default with no error. Registration happens natively while the view is
+  /// being created — before the first template load — so the very first paint
+  /// already has the font; nothing here is fetched over the network.
+  ///
+  /// Fonts registered here stay registered for the process, and re-listing
+  /// one on a later view is a no-op rather than a second decode.
+  final List<LynxFontAsset> fonts;
 
   /// Called every time a template finishes loading successfully (initial
   /// load and every [reload]).
@@ -65,6 +79,9 @@ class LynxViewController {
   Map<String, dynamic> get creationParams => <String, dynamic>{
         'templateUrl': _templateUrl,
         'initData': initData,
+        'fonts': <Map<String, Object?>>[
+          for (final LynxFontAsset font in fonts) font.toMap(),
+        ],
       };
 
   /// Wires this controller to the native view identified by [viewId] and

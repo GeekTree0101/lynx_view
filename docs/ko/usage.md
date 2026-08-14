@@ -55,4 +55,24 @@ void dispose() {
 
 `controller.templateUrl` getter는 **현재 성공적으로 렌더링된** URL을 가리킵니다. `reload()`가 실패하면 이 값은 갱신되지 않고 이전 값 그대로 남습니다 — 화면에 실제로 보이는 내용과 항상 일치하도록 설계했습니다.
 
+## 폰트
+
+Lynx는 폰트를 스스로 가져오지 않습니다. 템플릿이 `font-family`에 이름을 적어도 아무도 등록해 주지 않았으면 **조용히 시스템 폰트로 그려집니다**. 앱이 이미 갖고 있는 파일을 그대로 넘기세요.
+
+```dart
+LynxViewController(
+  templateUrl: '...',
+  fonts: const [
+    LynxFontAsset(family: 'Pretendard-Regular', assetPath: 'assets/fonts/Pretendard-Regular.otf'),
+    LynxFontAsset(family: 'Pretendard-Bold',    assetPath: 'assets/fonts/Pretendard-Bold.otf'),
+  ],
+);
+```
+
+`assetPath`는 앱 `pubspec.yaml`에 적힌 그대로의 Flutter asset 키입니다. `fonts:` 아래 선언한 파일도 asset 번들에 함께 들어가므로, Flutter 화면이 이미 쓰는 폰트라면 사본을 따로 둘 필요가 없습니다.
+
+**family 하나 = 굵기 하나입니다.** Lynx는 `font-family`를 이름으로만 찾습니다 — 한 이름에 등록된 여러 굵기 중에서 고르는 경로가 없고, 안드로이드는 CSS weight 500 이상이 전부 "bold" 한 칸으로 접힙니다. 굵기마다 family를 따로 주고 `font-weight`가 아니라 `font-family`로 고르세요.
+
+등록은 뷰가 만들어지는 동안 네이티브에서 일어나므로 **첫 페인트부터** 폰트가 맞습니다. 프로세스당 한 번만 수행되며, 읽지 못한 폰트는 로그만 남기고 건너뜁니다 — 화면은 시스템 폰트로 계속 그려집니다.
+
 다음 단계: [JS ↔ Dart 브릿지](./bridge.md)

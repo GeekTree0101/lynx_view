@@ -1,3 +1,16 @@
+## 1.7.0
+
+* Registers the `fonts` creation param with Lynx before building the
+  `LynxView`, so the first measure already resolves the family. Assets are
+  looked up through Flutter's own loader (`pubspec.yaml` keys are not the
+  paths `AssetManager` wants) and cached in `TypefaceCache`.
+* Each family fills all four typeface style slots with the same file.
+  `TypefaceCache.getCachedTypeface` answers only for the exact style asked
+  for, so a bold family with an empty bold slot would have Lynx synthesize a
+  bold on top of an already-bold face.
+* A family already in the cache is skipped — decoding a CJK font is tens of
+  milliseconds and every platform view creation would otherwise repeat it.
+
 ## 1.6.0
 
 * Splits Lynx error reporting by `LynxError.isFatal`: fatal errors keep

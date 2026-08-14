@@ -1,5 +1,6 @@
 export 'package:lynx_view_platform_interface/lynx_view_platform_interface.dart'
     show
+        LynxFontAsset,
         LynxInstanceMemory,
         LynxLoadError,
         LynxMemoryPressureLevel,
