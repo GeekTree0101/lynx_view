@@ -38,7 +38,11 @@ enum FontAssets {
             // The registered face is used as-is and only resized — Lynx does
             // not re-derive a weight from it — which is why one family here is
             // one weight (see `LynxFontAsset` on the Dart side).
-            LynxFontFaceManager.sharedManager().registerFont(font, forName: family)
+            // Not `sharedManager()` / `registerFont(_:forName:)`: the header
+            // carries no NS_SWIFT_NAME, so Swift's automatic ObjC renaming
+            // applies — it drops the suffix that repeats the class name and the
+            // one that repeats the first argument's type.
+            LynxFontFaceManager.shared().register(font, forName: family)
             registered.insert(family)
         }
     }

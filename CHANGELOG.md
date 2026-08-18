@@ -1,3 +1,12 @@
+## 1.7.1
+
+* Fixes the iOS build. 1.7.0's font registration called the Objective-C
+  selectors as written in Lynx's header — `sharedManager()` and
+  `registerFont(_:forName:)` — but the header carries no `NS_SWIFT_NAME`, so
+  Swift's automatic renaming applies and the real names are `shared()` and
+  `register(_:forName:)`. Any app on 1.7.0 fails to compile for iOS with
+  "'sharedManager()' has been renamed to 'shared()'". Android was unaffected.
+
 ## 1.7.0
 
 * Fonts. A template could name a `font-family` and never get one: Lynx does
