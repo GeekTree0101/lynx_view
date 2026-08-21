@@ -16,11 +16,15 @@ import com.lynx.tasm.service.LynxServiceCenter
  * from Lynx JS (`NativeModules.YourCustomModule`). Call
  * [registerNativeModule] once at app startup (e.g. `Application.onCreate`).
  *
- * Lynx only supports registering modules globally against `LynxEnv`, not per
- * `LynxView` instance — see the design note in the techspec. Since `LynxEnv`
- * is only actually initialized lazily, the first time a `LynxView` is
- * created (see [ensureInitialized]), calls made here are safe regardless of
- * whether that has happened yet: they're queued and flushed at that point.
+ * Modules registered here go on `LynxEnv`, so every `LynxView` in the
+ * process sees them — which is what an app-authored module wants, since it
+ * has no Flutter view to belong to. (Lynx does also allow per-view
+ * registration through `LynxViewBuilder`; the package's own
+ * [FlutterBridgeModule] needs that and uses it, but an app module would gain
+ * nothing from it.) Since `LynxEnv` is only actually initialized lazily, the
+ * first time a `LynxView` is created (see [ensureInitialized]), calls made
+ * here are safe regardless of whether that has happened yet: they're queued
+ * and flushed at that point.
  */
 object LynxViewPlugin {
     private val pendingModules =
@@ -85,7 +89,10 @@ object LynxViewPlugin {
                 /* templateProvider = */ RemoteTemplateProvider(),
                 /* behaviorBundle = */ null,
             )
-            LynxEnv.inst().registerModule(FlutterBridgeModule.NAME, FlutterBridgeModule::class.java)
+            // FlutterBridgeModule is deliberately *not* registered here: it
+            // needs to know which Flutter view it serves, and only a per-view
+            // registration can tell it. LynxPlatformView does that on the
+            // builder — see [FlutterBridgeModule].
             pendingModules.forEach { (name, moduleClass) ->
                 LynxEnv.inst().registerModule(name, moduleClass)
             }

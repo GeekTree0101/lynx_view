@@ -113,14 +113,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.7.1"
+    version: "1.7.2"
   lynx_view_android:
     dependency: "direct overridden"
     description:
       path: "../packages/lynx_view_android"
       relative: true
     source: path
-    version: "1.7.0"
+    version: "1.7.1"
   lynx_view_ios:
     dependency: "direct overridden"
     description:

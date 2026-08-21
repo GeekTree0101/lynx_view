@@ -41,7 +41,9 @@ lynx.getJSModule('GlobalEventEmitter').addListener('MyChannel', (data) => {
 
 `FlutterBridge`로는 문자열 기반 메시지만 오가기 때문에, 타입 안정성이나 무거운 연산이 필요하면 앱이 직접 네이티브 모듈을 만들어 등록합니다.
 
-**중요**: Lynx는 Native Module을 `LynxEnv`/`LynxConfig` 레벨(엔진 전역)에서만 등록합니다. `LynxView`나 `LynxViewController`는 이 과정에 전혀 관여하지 않습니다 — 그래서 등록은 Dart API가 아니라 **앱의 기존 네이티브 코드에서, 앱 시작 시점에 한 번만** 이뤄집니다. 자세한 내용은 [Quick Start](./quick-start.md)를 참고하세요.
+**중요**: 앱이 만드는 모듈은 `LynxEnv`/`LynxConfig` 레벨(엔진 전역)에 등록합니다. `LynxView`나 `LynxViewController`는 이 과정에 관여하지 않습니다 — 그래서 등록은 Dart API가 아니라 **앱의 기존 네이티브 코드에서, 앱 시작 시점에 한 번만** 이뤄집니다. 자세한 내용은 [Quick Start](./quick-start.md)를 참고하세요.
+
+> 뷰 단위 등록도 Lynx에 있긴 합니다(Android `LynxViewBuilder.registerModule`). 이 패키지의 내장 `FlutterBridge`는 "어느 Flutter 뷰로 답을 보낼지"를 알아야 해서 그쪽을 씁니다. 앱 모듈은 그럴 이유가 없으니 전역 등록이 맞습니다.
 
 등록된 모듈은 JS에서 그대로 호출합니다.
 

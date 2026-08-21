@@ -136,14 +136,14 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.7.1"
   lynx_view_platform_interface:
     dependency: "direct overridden"
     description:
       path: "../../lynx_view_platform_interface"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.6.0"
   matcher:
     dependency: transitive
     description:

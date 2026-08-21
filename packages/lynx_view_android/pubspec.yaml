@@ -1,6 +1,6 @@
 name: lynx_view_android
 description: "Android implementation of the lynx_view plugin (wraps Lynx's native LynxView as a Flutter PlatformView)."
-version: 1.7.0
+version: 1.7.1
 homepage: https://github.com/GeekTree0101/lynx_view
 
 environment:

@@ -33,6 +33,19 @@ internal class LynxPlatformView(
 
     private val lynxView: LynxView = LynxViewBuilder()
         .also { XElementSupport.addBehaviorsIfPresent(it) }
+        // Per-view, not global: this is how the bridge module learns which
+        // Flutter view it belongs to. Lynx hands the third argument back as
+        // the module's `mParam` when it constructs it, and a wrapper
+        // registered here wins over anything on LynxEnv. See
+        // [FlutterBridgeModule] for why reading it off the LynxView cannot
+        // work on Android.
+        .also {
+            it.registerModule(
+                FlutterBridgeModule.NAME,
+                FlutterBridgeModule::class.java,
+                viewId,
+            )
+        }
         .build(context)
     private val channel = MethodChannel(binaryMessenger, "$INSTANCE_CHANNEL_PREFIX$viewId")
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -82,9 +95,9 @@ internal class LynxPlatformView(
     }
 
     init {
-        // Lets FlutterBridgeModule (constructed per-LynxView by the engine)
-        // find its way back to this view's Dart channel.
-        lynxView.tag = viewId
+        // Lets FlutterBridgeModule — which the engine builds per LynxView with
+        // this view's id as its param — find its way back to this view's Dart
+        // channel.
         LynxViewRegistry.register(viewId, channel)
 
         channel.setMethodCallHandler(this)

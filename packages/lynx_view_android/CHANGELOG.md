@@ -1,3 +1,21 @@
+## 1.7.1
+
+* `FlutterBridgeModule` now receives its Flutter view id as a constructor
+  param, registered per view on `LynxViewBuilder`, instead of looking it up
+  through `LynxContext.getLynxView()` and `LynxView.getTag()`. Neither of
+  those answers on Android — the SDK has no call site for
+  `LynxContext.setLynxView()`, and `LynxView.getTag()` is overridden to
+  return the constant `"lynxview"` — so the lookup produced null and every
+  JS -> Dart message was dropped. Silently: both failure paths were bare
+  `return`s, which is why a bridge that never worked looked like it did.
+* Dropped messages are reported through `LLog` now, and the routing has unit
+  tests. Taking the id as a param is what makes those tests possible at all
+  — resolving it no longer needs a live `LynxView`.
+* `LynxEnv` no longer carries a global `FlutterBridge` registration. One
+  registration path, and it is the one that knows which view it serves.
+  App-authored modules via `LynxViewPlugin.registerNativeModule` are
+  unchanged and stay global.
+
 ## 1.7.0
 
 * Registers the `fonts` creation param with Lynx before building the

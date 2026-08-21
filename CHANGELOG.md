@@ -1,3 +1,23 @@
+## 1.7.2
+
+* Fixes the JS -> Dart bridge on Android, which had never worked. A bundle
+  calling `NativeModules.FlutterBridge.postMessage(...)` had its message
+  dropped without a log, so `addJavaScriptChannel` never fired and any
+  request/response protocol built on top of it hung forever. The other
+  direction (`sendEvent`, via `GlobalEventEmitter`) was fine, so screens
+  rendered and only the calls into the app went missing. iOS was unaffected
+  and needs no change.
+* The cause was how the native module found the Flutter view it belonged to:
+  it asked `LynxContext` for its `LynxView` and read the id off the view's
+  tag. Neither half answers on Android — Lynx 4.0.0 never calls
+  `LynxContext.setLynxView()` anywhere in the SDK, and `LynxView` overrides
+  `getTag()` to return the constant `"lynxview"`. On iOS the same code works
+  because a `LynxView` is a `UIView` whose `tag` really is an integer.
+* The view id is now handed to the module when it is built, through Lynx's
+  per-view module registration, so nothing has to be read back off the view.
+  Dropped messages are logged instead of swallowed, and the routing is
+  covered by unit tests that need no live `LynxView`.
+
 ## 1.7.1
 
 * Fixes the iOS build. 1.7.0's font registration called the Objective-C
