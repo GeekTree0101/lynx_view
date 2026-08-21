@@ -1,3 +1,19 @@
+## 1.7.3
+
+* Completes the Android bridge fix started in 1.7.2. That release repaired the
+  JS -> Dart direction; this one repairs the reply. 1.7.2 said the other
+  direction was fine — that holds only for flat payloads. `sendEvent` handed
+  Lynx its arguments with a top-level-only conversion, so any nested object or
+  list inside them was passed through as a plain Java `Map`/`List` and rejected
+  when Lynx read it back, with the exception swallowed and the bundle seeing
+  only `cannot convert to object`.
+* So a bundle using `addJavaScriptChannel` for request/response still hung
+  after 1.7.2: the request reached Dart, and the reply envelope
+  (`{id, ok, result}`) never arrived, because `result` is a structured object
+  by definition. Verified on a real screen whose every data call goes through
+  that protocol.
+* Requires `lynx_view_android` 1.7.2. iOS is unaffected and unchanged.
+
 ## 1.7.2
 
 * Fixes the JS -> Dart bridge on Android, which had never worked. A bundle

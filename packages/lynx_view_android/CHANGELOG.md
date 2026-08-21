@@ -1,3 +1,21 @@
+## 1.7.2
+
+* Fixes `sendEvent` for any payload that is not flat. `JavaOnlyMap.from` and
+  `JavaOnlyArray.from` copy their entries across without converting them, so a
+  nested `Map`/`List` — what Flutter's `StandardMessageCodec` decodes into —
+  stayed a `LinkedHashMap`/`ArrayList` that Lynx cannot read. It blew up later,
+  when Lynx read the value back: `JavaOnlyMap.getType` throws
+  `IllegalArgumentException: Invalid value {...} for key ... contained in
+  JavaOnlyMap`, nothing on that path catches it, and the bundle only ever saw
+  `cannot convert to object` while its listener never fired.
+* This is the other half of the bridge 1.7.1 repaired. With inbound routing
+  fixed, a request/response protocol built on `postMessage` + `sendEvent` still
+  could not complete: the request arrived, and the reply — `{id, ok, result}`,
+  whose `result` is by nature a structured object — was dropped on the way out.
+* Payloads are now deep-converted to Lynx's own container types
+  (`toLynxValue`), leaves untouched. Covered by unit tests that need no live
+  `LynxView`.
+
 ## 1.7.1
 
 * `FlutterBridgeModule` now receives its Flutter view id as a constructor
