@@ -1,6 +1,6 @@
 name: lynx_view_ios
 description: "iOS implementation of the lynx_view plugin (wraps Lynx's native LynxView as a Flutter PlatformView)."
-version: 1.7.1
+version: 1.8.0
 homepage: https://github.com/GeekTree0101/lynx_view
 
 environment:

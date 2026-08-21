@@ -24,6 +24,10 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
     private var isLoading = false
     private var pendingLoad: (templateUrl: String, initData: [String: Any]?)?
 
+    /// Whether Flutter has given this view a real size yet — see `load`.
+    /// Main-thread only.
+    private var hasViewport = false
+
     init(
         frame: CGRect,
         viewId: Int64,
@@ -48,6 +52,12 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
 
         channel.setMethodCallHandler { [weak self] call, result in
             self?.handle(call, result: result)
+        }
+
+        // Set before the first load is even requested — the request below is
+        // going to be held until this fires.
+        containerView.onViewportReady = { [weak self] in
+            self?.viewportDidBecomeReady()
         }
 
         if let params = args as? [String: Any], let templateUrl = params["templateUrl"] as? String {
@@ -91,14 +101,41 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
         }
     }
 
+    /// Two things hold a load back, and both mean the same thing: not yet.
+    ///
+    /// One is another load still running — see `pendingLoad`. The other is not
+    /// knowing how big this view is. A Flutter platform view is created before
+    /// it is placed, so at that moment its size is zero, and a template laid
+    /// out against a zero viewport stays collapsed in the top-left: Lynx
+    /// resolves `%`, `flex` and `vh` while laying out and does not redo that
+    /// on its own afterwards. Waiting costs one frame — the load itself takes
+    /// far longer than that — and buys a first paint that is already correct.
+    ///
+    /// Either way the newest request wins, and it runs as soon as the reason
+    /// to wait is gone.
     private func load(templateUrl: String, initData: [String: Any]?) {
-        if isLoading {
+        if isLoading || !hasViewport {
             pendingLoad = (templateUrl, initData)
             return
         }
         isLoading = true
         let templateData = LynxTemplateData(dictionary: initData ?? [:])
         lynxView.loadTemplate(fromURL: templateUrl, initData: templateData)
+    }
+
+    /// The view has been placed and Lynx knows its size. Whatever was held for
+    /// that runs now.
+    ///
+    /// A view that Flutter never gives a size to never loads — a `LynxView` in
+    /// a zero-height box, say. That is the intended reading of "wait for the
+    /// size", and it renders nothing either way.
+    private func viewportDidBecomeReady() {
+        if hasViewport { return }
+        hasViewport = true
+
+        guard let next = pendingLoad else { return }
+        pendingLoad = nil
+        load(templateUrl: next.templateUrl, initData: next.initData)
     }
 
     /// Called when the in-flight load reports back. Returns true if another

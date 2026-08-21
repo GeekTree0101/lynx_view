@@ -1,3 +1,23 @@
+## 1.8.0
+
+* The first template load now waits until the view has been laid out with a
+  real size. A platform view is created before it is placed, so the load ran
+  against a viewport of nothing. Lynx resolves `%`, `flex` and `vh` while it
+  lays out and does not redo that on its own, so the template stayed collapsed
+  in the top-left — a spinner pinned to the corner, then a blank screen.
+* Nothing has to be measured here to make that work. `LynxView.onMeasure`
+  already hands its measure specs to `updateViewport`, and measure runs before
+  layout — so by the first layout pass with a real size, Lynx knows the
+  viewport and the load simply starts there. A one-shot
+  `OnLayoutChangeListener` is the whole mechanism.
+* Holding the load reuses the machinery that already holds one behind an
+  in-flight load: newest request wins, and a `reload()` that arrives before
+  the size is queued rather than dropped. The wait is about a frame, against a
+  load that takes far longer.
+* Behavior change worth knowing: a `LynxView` that Flutter never gives a size
+  to never loads its bundle. Parking one in a zero-height box no longer
+  pre-warms it — it rendered nothing either way.
+
 ## 1.7.2
 
 * Fixes `sendEvent` for any payload that is not flat. `JavaOnlyMap.from` and
