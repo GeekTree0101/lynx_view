@@ -1,6 +1,6 @@
 name: lynx_view
 description: "Wraps LynxJS (https://lynxjs.org) native LynxView as a Flutter PlatformView, so existing Flutter apps can embed Lynx templates."
-version: 1.7.2
+version: 1.7.3
 homepage: https://github.com/GeekTree0101/lynx_view
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   lynx_view_platform_interface: ^1.6.0
-  lynx_view_android: ^1.7.1
+  lynx_view_android: ^1.7.2
   lynx_view_ios: ^1.7.1
 
 dev_dependencies:

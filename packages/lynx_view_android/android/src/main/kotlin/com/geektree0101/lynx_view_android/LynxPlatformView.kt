@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.lynx.react.bridge.JavaOnlyArray
-import com.lynx.react.bridge.JavaOnlyMap
 import com.lynx.tasm.LynxError
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
@@ -138,7 +137,7 @@ internal class LynxPlatformView(
                 // from the public docs: a JS listener receives this as an
                 // array of positional params, so we send a 1-element array
                 // containing the args map.
-                lynxView.sendGlobalEvent(name, JavaOnlyArray.from(listOf(JavaOnlyMap.from(args))))
+                lynxView.sendGlobalEvent(name, JavaOnlyArray().apply { add(toLynxValue(args)) })
                 result.success(null)
             }
             "dispose" -> {
