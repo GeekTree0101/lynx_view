@@ -3,6 +3,7 @@ package com.geektree0101.lynx_view_android
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import com.lynx.react.bridge.JavaOnlyArray
 import com.lynx.tasm.LynxError
 import com.lynx.tasm.LynxView
@@ -59,6 +60,35 @@ internal class LynxPlatformView(
     private var isLoading = false
     private var pendingLoad: Pair<String, Map<String, Any?>?>? = null
 
+    /** Whether Flutter has given this view a real size yet — see [load]. */
+    private var hasViewport = false
+
+    /**
+     * Fires on every layout pass; only the first one with a real size matters,
+     * and it takes itself off the view once it has seen it.
+     *
+     * By the time this runs, Lynx already knows the size: [LynxView.onMeasure]
+     * hands the measure specs to `updateViewport`, and measure runs before
+     * layout. So there is nothing to report here — only a load to release.
+     */
+    private val firstLayoutListener = object : View.OnLayoutChangeListener {
+        override fun onLayoutChange(
+            v: View,
+            left: Int,
+            top: Int,
+            right: Int,
+            bottom: Int,
+            oldLeft: Int,
+            oldTop: Int,
+            oldRight: Int,
+            oldBottom: Int,
+        ) {
+            if (right - left <= 0 || bottom - top <= 0) return
+            v.removeOnLayoutChangeListener(this)
+            onViewportReady()
+        }
+    }
+
     // LynxViewClient callbacks fire off the main thread, but MethodChannel
     // must be invoked on it — posting here matches the fix already applied
     // in FlutterBridgeModule.postMessage.
@@ -101,6 +131,9 @@ internal class LynxPlatformView(
 
         channel.setMethodCallHandler(this)
         lynxView.addLynxViewClient(loadListener)
+        // Before the first load is even requested — that request is going to
+        // be held until this listener fires.
+        lynxView.addOnLayoutChangeListener(firstLayoutListener)
 
         val templateUrl = creationParams?.get("templateUrl") as? String
         @Suppress("UNCHECKED_CAST")
@@ -148,14 +181,45 @@ internal class LynxPlatformView(
         }
     }
 
+    /**
+     * Two things hold a load back, and both mean the same thing: not yet.
+     *
+     * One is another load still running — see [pendingLoad]. The other is not
+     * knowing how big this view is. A Flutter platform view is created before
+     * it is placed, so at that moment it has no size, and a template laid out
+     * against a zero viewport stays collapsed in the top-left: Lynx resolves
+     * `%`, `flex` and `vh` while laying out and does not redo that on its own
+     * afterwards. Waiting costs one frame — the load itself takes far longer
+     * than that — and buys a first paint that is already correct.
+     *
+     * Either way the newest request wins, and it runs as soon as the reason to
+     * wait is gone.
+     */
     private fun load(templateUrl: String, initData: Map<String, Any?>?) {
-        if (isLoading) {
+        if (isLoading || !hasViewport) {
             pendingLoad = templateUrl to initData
             return
         }
         isLoading = true
         @Suppress("UNCHECKED_CAST")
         lynxView.renderTemplateUrl(templateUrl, (initData ?: emptyMap<String, Any?>()) as Map<String, Any>)
+    }
+
+    /**
+     * The view has been placed and Lynx knows its size. Whatever was held for
+     * that runs now.
+     *
+     * A view that Flutter never gives a size to never loads — a `LynxView` in
+     * a zero-height box, say. That is the intended reading of "wait for the
+     * size", and it renders nothing either way.
+     */
+    private fun onViewportReady() {
+        if (hasViewport) return
+        hasViewport = true
+
+        val next = pendingLoad ?: return
+        pendingLoad = null
+        load(next.first, next.second)
     }
 
     /**
@@ -187,6 +251,7 @@ internal class LynxPlatformView(
         LynxViewRegistry.unregister(viewId)
         channel.setMethodCallHandler(null)
         lynxView.removeLynxViewClient(loadListener)
+        lynxView.removeOnLayoutChangeListener(firstLayoutListener)
         lynxView.destroy()
     }
 

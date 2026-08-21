@@ -15,6 +15,13 @@ import 'lynx_view_controller.dart';
 /// Sizing follows normal Flutter platform-view rules: this widget has no
 /// intrinsic size, so wrap it in something that constrains it
 /// (`SizedBox`, `Expanded`, `AspectRatio`, ...).
+///
+/// That size is also what the template load waits for. A template resolves
+/// `%`, `flex` and `vh` against the viewport it has while laying out and does
+/// not redo that afterwards, so the native view holds its first load until
+/// this widget has been given a real size — about a frame, in exchange for a
+/// first paint that is already correct. A [LynxView] that never gets a size
+/// never loads its bundle.
 class LynxView extends StatefulWidget {
   const LynxView({
     super.key,

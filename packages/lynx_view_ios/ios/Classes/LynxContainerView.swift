@@ -14,9 +14,21 @@ import UIKit
 /// overflows.
 ///
 /// So the container forwards its bounds to `updateViewport(...)` whenever they
-/// change, which is the hook Lynx exposes for exactly this.
+/// change, which is the hook Lynx exposes for exactly this — and announces the
+/// first of those through `onViewportReady`, which is what the initial template
+/// load waits for.
 final class LynxContainerView: UIView {
     let lynxView: LynxView
+
+    /// Called once, right after Lynx has been told a real (non-zero) size for
+    /// the first time.
+    ///
+    /// Correcting the viewport after the fact is not the same as having had it
+    /// all along: a template resolves `%`, `flex` and `vh` while it lays out,
+    /// and a later `updateViewport(...)` does not always walk that back. So
+    /// `LynxPlatformView` holds the first load until this fires, and the very
+    /// first layout is then the right one.
+    var onViewportReady: (() -> Void)?
 
     private var lastReportedSize: CGSize = .zero
 
@@ -48,5 +60,12 @@ final class LynxContainerView: UIView {
             withPreferredLayoutWidth: bounds.width,
             preferredLayoutHeight: bounds.height
         )
+
+        // After the viewport, never before: whatever this starts must find the
+        // size already in place.
+        if let ready = onViewportReady {
+            onViewportReady = nil
+            ready()
+        }
     }
 }

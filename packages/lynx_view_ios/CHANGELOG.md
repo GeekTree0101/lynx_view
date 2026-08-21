@@ -1,3 +1,24 @@
+## 1.8.0
+
+* The first template load now waits until Flutter has given the view a real
+  size. A platform view is created before it is placed, so the factory handed
+  us a zero frame and the load ran against a zero viewport. Lynx resolves
+  `%`, `flex` and `vh` while it lays out and does not redo that on its own, so
+  the template stayed collapsed in the top-left — a spinner pinned to the
+  corner, then a blank screen.
+* `LynxContainerView` already forwarded the real bounds to `updateViewport`
+  as soon as Flutter placed it. That fixes the viewport, not the layout the
+  template had already done against the old one — which is why hosts were
+  resorting to a 1px resize after `onLoadSuccess` to force a second pass.
+  Now the first pass is the right one, and there is no second.
+* Holding the load reuses the machinery that already holds one behind an
+  in-flight load: newest request wins, and a `reload()` that arrives before
+  the size is queued rather than dropped. The wait is about a frame, against a
+  load that takes far longer.
+* Behavior change worth knowing: a `LynxView` that Flutter never gives a size
+  to never loads its bundle. Parking one in a zero-height box no longer
+  pre-warms it — it rendered nothing either way.
+
 ## 1.7.1
 
 * Call `LynxFontFaceManager.shared().register(_:forName:)`, the names Swift

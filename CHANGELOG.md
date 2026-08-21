@@ -1,3 +1,25 @@
+## 1.8.0
+
+* A bundle no longer lays itself out against a size the view does not have
+  yet. Flutter creates a platform view before it places it, and the native
+  side loaded the template right there — against a zero viewport. Lynx
+  resolves `%`, `flex` and `vh` while laying out and does not redo that on its
+  own, so a screen could come up collapsed into the top-left and stay that
+  way: a centered spinner drawn in the corner, then white.
+* Both platforms now hold the first load until Flutter has given the view a
+  real size, then load once, with the right viewport. It costs about a frame
+  — the load itself is a network fetch — and it removes the workaround hosts
+  had settled on, which was to resize the view by a pixel after
+  `onLoadSuccess` so the template would lay out a second time. If you carry
+  one of those, this is the release to drop it.
+* Requests are not lost while the view waits: a `reload()` that arrives first
+  is queued and the newest one wins, exactly as it already worked behind an
+  in-flight load.
+* Behavior change worth knowing: a `LynxView` that Flutter never gives a size
+  to never loads its bundle. Parking one in a zero-height box no longer
+  pre-warms it — it rendered nothing either way.
+* Requires `lynx_view_android` 1.8.0 and `lynx_view_ios` 1.8.0.
+
 ## 1.7.3
 
 * Completes the Android bridge fix started in 1.7.2. That release repaired the

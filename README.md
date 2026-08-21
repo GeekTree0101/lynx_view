@@ -84,6 +84,14 @@ class _LynxScreenState extends State<LynxScreen> {
 }
 ```
 
+### Sizing
+
+`LynxView` is a platform view, so it has no intrinsic size — constrain it (`SizedBox`, `Expanded`, `AspectRatio`, ...).
+
+That size is a precondition for loading, not a nicety. A template resolves `%`, `flex` and `vh` against the viewport it has while laying out, and does not redo that on its own afterwards — so the native view holds the first load until Flutter has given it a real size. It costs about a frame, and the first paint is correct instead of collapsed into the top-left.
+
+The flip side: **a `LynxView` that is never given a size never loads its bundle.** Parking one in a zero-height box does not pre-warm it.
+
 ### Fonts
 
 Lynx does not load fonts by itself — a template naming a `font-family` nobody registered draws in the system font, silently. Hand it the files the host app already ships:
