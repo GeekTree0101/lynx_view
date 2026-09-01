@@ -1,3 +1,18 @@
+## 1.8.1
+
+* The platform view factory now registers with the `WaitUntilTouchesEnded`
+  gesture-blocking policy instead of the default `Eager`. Under `Eager`,
+  Flutter guarantees a platform view's gesture recognizers only their
+  `touchesBegan` — the rest of a touch sequence may be cut off mid-stream
+  whenever the framework decides to block — and Lynx recognizes taps with
+  its own native `UITapGestureRecognizer`, so taps intermittently vanished.
+  With `WaitUntilTouchesEnded` the recognizers see every sequence whole and
+  blocking applies only to recognition, at the end of the sequence.
+* Trade-off: raw touch events of a sequence that a Flutter widget wins still
+  reach the bundle; only gesture recognition is suppressed. `bindtap` stays
+  safe, but logic a bundle drives off raw `touchstart`/`touchmove`/`touchend`
+  may see touches that belong to Flutter.
+
 ## 1.8.0
 
 * The first template load now waits until Flutter has given the view a real

@@ -12,7 +12,17 @@ private let pluginChannelName = "com.geektree0101.lynx_view/plugin"
 public class LynxViewIosPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let factory = LynxPlatformViewFactory(messenger: registrar.messenger())
-        registrar.register(factory, withId: lynxViewType)
+        // Lynx recognizes taps with its own native UITapGestureRecognizer, and
+        // the default Eager policy only guarantees delivery of touchesBegan to
+        // a platform view's recognizers — the rest of a sequence may be cut
+        // mid-stream whenever Flutter blocks, which surfaced as intermittent
+        // lost taps on iOS. WaitUntilTouchesEnded defers that block to the end
+        // of the sequence, so Lynx always sees begin/move/end as a whole.
+        registrar.register(
+            factory,
+            withId: lynxViewType,
+            gestureRecognizersBlockingPolicy: FlutterPlatformViewGestureRecognizersBlockingPolicyWaitUntilTouchesEnded
+        )
 
         let channel = FlutterMethodChannel(
             name: pluginChannelName,
