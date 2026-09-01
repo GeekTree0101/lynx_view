@@ -1,3 +1,22 @@
+## 1.8.1
+
+* iOS taps no longer vanish intermittently. Flutter's default gesture
+  blocking policy (`Eager`) guarantees a platform view's gesture recognizers
+  only their `touchesBegan` — the rest of a touch sequence may be cut off
+  mid-stream whenever the framework decides to block. Lynx recognizes taps
+  with its own native `UITapGestureRecognizer`, so a tap whose sequence was
+  cut simply never fired. The iOS factory now registers with
+  `WaitUntilTouchesEnded`, which lets Lynx's recognizers see every touch
+  sequence whole and applies blocking only to recognition, at the end of the
+  sequence.
+* Trade-off worth knowing: raw touch events of a sequence that a Flutter
+  widget wins (an overlay tap, an edge-swipe back) now reach the bundle as
+  `touchstart`/`touchmove`/`touchend`. `bindtap` is unaffected — it is driven
+  by the native tap recognizer, which Flutter still blocks — but anything a
+  bundle drives off raw touch events (`:active` highlights, touch-following
+  carousels) may react to touches that belong to Flutter.
+* Requires `lynx_view_ios` 1.8.1. Android is unaffected and unchanged.
+
 ## 1.8.0
 
 * A bundle no longer lays itself out against a size the view does not have
