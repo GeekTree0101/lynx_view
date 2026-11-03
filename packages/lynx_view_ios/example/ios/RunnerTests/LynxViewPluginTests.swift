@@ -74,4 +74,34 @@ final class LynxViewPluginTests: XCTestCase {
 
         XCTAssertEqual(LynxViewPlugin.pendingModuleNamesForTesting(), ["Dummy"])
     }
+
+    func testResourceFetcherIsThePlainHTTPOneUntilAHostSetsItsOwn() {
+        XCTAssertTrue(LynxViewPlugin.resourceFetcher() is RemoteResourceFetcher)
+    }
+
+    func testSetResourceFetcherReplacesTheDefaultAndNilRestoresIt() {
+        let custom = NoopResourceFetcher()
+
+        LynxViewPlugin.setResourceFetcher(custom)
+        XCTAssertTrue(LynxViewPlugin.resourceFetcher() === custom)
+
+        LynxViewPlugin.setResourceFetcher(nil)
+        XCTAssertTrue(LynxViewPlugin.resourceFetcher() is RemoteResourceFetcher)
+    }
+}
+
+private final class NoopResourceFetcher: NSObject, LynxGenericResourceFetcher {
+    func fetchResource(
+        _ request: LynxResourceRequest,
+        onComplete callback: @escaping LynxGenericResourceCompletionBlock
+    ) -> () -> Void {
+        {}
+    }
+
+    func fetchResourcePath(
+        _ request: LynxResourceRequest,
+        onComplete callback: @escaping LynxGenericResourcePathCompletionBlock
+    ) -> () -> Void {
+        {}
+    }
 }

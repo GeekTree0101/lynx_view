@@ -35,7 +35,17 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
         binaryMessenger messenger: FlutterBinaryMessenger
     ) {
         self.viewId = viewId
-        let lynxView = LynxView(frame: frame)
+        // `LynxView(frame:)` is this same block with only the frame set.
+        // Anything that is not an <image> — an <svg src>, a font by URL —
+        // is fetched through the generic fetcher, and Lynx ships no default:
+        // without one XElement's <svg> messages nil and draws nothing. The
+        // option has to be switched on explicitly too; left unset it
+        // follows a LynxEnv default that is off.
+        let lynxView = LynxView { builder in
+            builder.frame = frame
+            builder.enableGenericResourceFetcher = .`true`
+            builder.genericResourceFetcher = LynxViewPlugin.resourceFetcher()
+        }
         self.lynxView = lynxView
         self.containerView = LynxContainerView(lynxView: lynxView)
         self.channel = FlutterMethodChannel(

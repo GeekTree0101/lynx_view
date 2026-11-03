@@ -79,4 +79,26 @@ LynxViewController(
 
 등록은 뷰가 만들어지는 동안 네이티브에서 일어나므로 **첫 페인트부터** 폰트가 맞습니다. 프로세스당 한 번만 수행되며, 읽지 못한 폰트는 로그만 남기고 건너뜁니다 — 화면은 시스템 폰트로 계속 그려집니다.
 
+## 원격 리소스 — `<svg src>`, URL 로 적은 폰트
+
+`<image>` 는 이미지 서비스가 알아서 받아옵니다. 그 밖에 템플릿이 URL 로 적는 것 — `<svg src="https://…">`, 폰트 파일, Lottie 파일 — 은 Lynx 가 기본 로더를 주지 않습니다. 로더가 없으면 XElement 의 `<svg>` 는 **아무것도 그리지 않고**, Android 는 로그 한 줄(`getGenericResourceFetcher is null`)만 남기고 iOS 는 그마저 없습니다. 패키지가 로더를 하나 꽂아 두므로 아래가 그대로 됩니다.
+
+```jsx
+<svg src="https://cdn.example.com/icons/locomotive.svg" style={{ width: '36px', height: '36px' }} />
+```
+
+기본 로더는 헤더 없는 `GET` 이고 캐시는 플랫폼 기본값을 따릅니다. 공개 객체, CDN 경로, 서명 URL 이면 이걸로 충분합니다. 버킷이 인증 헤더를 요구하거나 앱에 공유할 캐시가 있으면, 첫 뷰가 만들어지기 전에 직접 만든 것을 넘기세요.
+
+```swift
+// AppDelegate.swift
+LynxViewPlugin.setResourceFetcher(MyResourceFetcher())   // LynxGenericResourceFetcher. nil 이면 기본으로 복귀
+```
+
+```kotlin
+// Application.onCreate
+LynxViewPlugin.setResourceFetcher(MyResourceFetcher())   // LynxGenericResourceFetcher. null 이면 기본으로 복귀
+```
+
+파일이 어떻게 오든 SVG 렌더러가 안 하는 일 둘은 같습니다. `currentColor` 를 풀지 않으니 색은 파일에 리터럴로 적고, 파일 자체의 `width`/`height` 는 무시되니 크기는 엘리먼트 `style` 로 정합니다.
+
 다음 단계: [JS ↔ Dart 브릿지](./bridge.md)

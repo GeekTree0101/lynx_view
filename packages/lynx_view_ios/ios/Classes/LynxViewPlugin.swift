@@ -17,6 +17,29 @@ public final class LynxViewPlugin: NSObject {
     private static var pendingModules: [(name: String, moduleClass: LynxModule.Type)] = []
     private static var initialized = false
     private static let lock = NSLock()
+    private static var customResourceFetcher: LynxGenericResourceFetcher?
+    private static let defaultResourceFetcher = RemoteResourceFetcher()
+
+    /// Replaces the loader Lynx uses for resources other than `<image>` — an
+    /// `<svg src="https://…">`, a font or Lottie file named by URL. The
+    /// default is a plain `GET` with no headers, which covers public objects
+    /// and signed URLs; set your own when the bucket wants auth headers or
+    /// you have a cache to share. `nil` restores the default.
+    ///
+    /// Read when each `LynxView` is built, so a fetcher set before the view
+    /// is created is the one it uses; views already on screen keep theirs.
+    public static func setResourceFetcher(_ fetcher: LynxGenericResourceFetcher?) {
+        lock.lock()
+        defer { lock.unlock() }
+        customResourceFetcher = fetcher
+    }
+
+    /// The fetcher a new `LynxView` should be built with.
+    public static func resourceFetcher() -> LynxGenericResourceFetcher {
+        lock.lock()
+        defer { lock.unlock() }
+        return customResourceFetcher ?? defaultResourceFetcher
+    }
 
     public static func registerNativeModule(_ name: String, moduleClass: LynxModule.Type) {
         lock.lock()
@@ -73,6 +96,7 @@ public final class LynxViewPlugin: NSObject {
         lock.lock()
         defer { lock.unlock() }
         pendingModules.removeAll()
+        customResourceFetcher = nil
         initialized = false
     }
 }

@@ -2,10 +2,15 @@ package com.geektree0101.lynx_view_android
 
 import android.content.Context
 import com.lynx.jsbridge.LynxModule
+import com.lynx.tasm.resourceprovider.LynxResourceCallback
+import com.lynx.tasm.resourceprovider.LynxResourceRequest
+import com.lynx.tasm.resourceprovider.generic.LynxGenericResourceFetcher
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
 /**
  * Covers the pre-init pending-module queue only — never calls
@@ -60,5 +65,24 @@ internal class LynxViewPluginTest {
         LynxViewPlugin.unregisterNativeModule("DoesNotExist")
 
         assertEquals(listOf("Dummy"), LynxViewPlugin.pendingModuleNamesForTesting())
+    }
+
+    @Test
+    fun `resourceFetcher is the plain HTTP one until a host sets its own`() {
+        assertIs<RemoteResourceFetcher>(LynxViewPlugin.resourceFetcher())
+    }
+
+    @Test
+    fun `setResourceFetcher replaces the default and null restores it`() {
+        val custom = object : LynxGenericResourceFetcher() {
+            override fun fetchResource(request: LynxResourceRequest, callback: LynxResourceCallback<ByteArray>) = Unit
+            override fun fetchResourcePath(request: LynxResourceRequest, callback: LynxResourceCallback<String>) = Unit
+        }
+
+        LynxViewPlugin.setResourceFetcher(custom)
+        assertSame(custom, LynxViewPlugin.resourceFetcher())
+
+        LynxViewPlugin.setResourceFetcher(null)
+        assertIs<RemoteResourceFetcher>(LynxViewPlugin.resourceFetcher())
     }
 }
