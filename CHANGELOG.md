@@ -1,3 +1,19 @@
+## 1.9.0
+
+* `<svg src="https://…">` now renders. Lynx fetches anything that is not an
+  `<image>` — a remote SVG, a font or Lottie file named by URL — through a
+  generic resource fetcher it does not ship, and neither platform had one
+  wired in: XElement's `<svg>` drew nothing, with a log line on Android and
+  silence on iOS. Both platforms now build every `LynxView` with a plain
+  HTTP(S) `GET` fetcher, so a public object, a CDN path or a signed URL works
+  with no setup.
+* Hosts that need auth headers or their own cache hand in a
+  `LynxGenericResourceFetcher` with `LynxViewPlugin.setResourceFetcher` (Swift
+  and Kotlin alike); `nil`/`null` restores the default. It is read when a view
+  is built, so set it before the first one.
+* Requires `lynx_view_android` 1.9.0 and `lynx_view_ios` 1.9.0. No Dart API
+  change.
+
 ## 1.8.1
 
 * iOS taps no longer vanish intermittently. Flutter's default gesture

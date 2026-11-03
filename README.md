@@ -117,6 +117,28 @@ LynxViewController(
 
 Registration happens natively while the view is created, so the first paint already has the font. It is per-process and idempotent; a font that will not load is skipped with a log and the screen keeps rendering in the system font.
 
+### Remote resources: `<svg src>`, fonts by URL
+
+`<image>` fetches on its own, through the image service. Anything else a template names by URL — an `<svg src="https://…">`, a font or Lottie file — goes through a loader Lynx does not ship: without one, XElement's `<svg>` draws nothing and says so only in a log line on Android (`getGenericResourceFetcher is null`), not at all on iOS. The package installs one, so this works out of the box:
+
+```jsx
+<svg src="https://cdn.example.com/icons/locomotive.svg" style={{ width: '36px', height: '36px' }} />
+```
+
+The default is a plain `GET` with no headers and the platform's default cache behaviour, which covers public objects, CDN paths and signed URLs. If the bucket wants auth headers, or you have a cache to share, hand in your own before the first view is created:
+
+```swift
+// AppDelegate.swift
+LynxViewPlugin.setResourceFetcher(MyResourceFetcher())   // LynxGenericResourceFetcher; nil restores the default
+```
+
+```kotlin
+// Application.onCreate
+LynxViewPlugin.setResourceFetcher(MyResourceFetcher())   // LynxGenericResourceFetcher; null restores the default
+```
+
+Two things the SVG renderer does not do, whichever way the file arrives: it does not resolve `currentColor` (write literal colours into the file), and it ignores the file's own `width`/`height` (the element's style decides).
+
 ### JS &lt;-&gt; Dart messaging without native code
 
 ```dart

@@ -1,3 +1,16 @@
+## 1.9.0
+
+* Every `LynxViewBuilder` now carries a generic resource fetcher and has the
+  option switched on. Lynx routes anything that is not an `<image>` — an
+  `<svg src>`, a font by URL, a Lottie file — through
+  `LynxContext.getGenericResourceFetcher()`, ships no default, and the option
+  that gates it follows a `LynxEnv` default that is off; XElement's `<svg>`
+  logged `getGenericResourceFetcher is null, svg fetch src failed!` and drew
+  nothing. The default fetcher is a plain `HttpURLConnection` `GET`.
+* `LynxViewPlugin.setResourceFetcher(LynxGenericResourceFetcher?)` lets a
+  host swap it for one that adds headers or shares a cache; `null` restores
+  the default.
+
 ## 1.8.0
 
 * The first template load now waits until the view has been laid out with a

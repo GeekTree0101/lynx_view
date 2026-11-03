@@ -9,6 +9,7 @@ import com.facebook.imagepipeline.memory.PoolFactory
 import com.lynx.jsbridge.LynxModule
 import com.lynx.service.image.LynxImageService
 import com.lynx.tasm.LynxEnv
+import com.lynx.tasm.resourceprovider.generic.LynxGenericResourceFetcher
 import com.lynx.tasm.service.LynxServiceCenter
 
 /**
@@ -30,6 +31,29 @@ object LynxViewPlugin {
     private val pendingModules =
         mutableListOf<Pair<String, Class<out LynxModule>>>()
     private var initialized = false
+    private var customResourceFetcher: LynxGenericResourceFetcher? = null
+
+    /**
+     * Replaces the loader Lynx uses for resources other than `<image>` — an
+     * `<svg src="https://…">`, a font or Lottie file named by URL. The
+     * default is a plain `GET` with no headers, which covers public objects
+     * and signed URLs; set your own when the bucket wants auth headers or
+     * you have a cache to share. `null` restores the default.
+     *
+     * Read when each `LynxView` is built, so a fetcher set before the view is
+     * created is the one it uses; views already on screen keep theirs.
+     */
+    @JvmStatic
+    fun setResourceFetcher(fetcher: LynxGenericResourceFetcher?) {
+        synchronized(this) { customResourceFetcher = fetcher }
+    }
+
+    /** The fetcher a new `LynxView` should be built with. */
+    @JvmStatic
+    fun resourceFetcher(): LynxGenericResourceFetcher =
+        synchronized(this) { customResourceFetcher ?: defaultResourceFetcher }
+
+    private val defaultResourceFetcher: LynxGenericResourceFetcher by lazy { RemoteResourceFetcher() }
 
     @JvmStatic
     fun registerNativeModule(name: String, moduleClass: Class<out LynxModule>) {
@@ -117,6 +141,7 @@ object LynxViewPlugin {
     internal fun resetForTesting() {
         synchronized(this) {
             pendingModules.clear()
+            customResourceFetcher = null
             initialized = false
         }
     }

@@ -1,3 +1,16 @@
+## 1.9.0
+
+* Every `LynxView` is now built through a `LynxViewBuilder` block that sets a
+  generic resource fetcher and turns the option on. Lynx routes anything that
+  is not an `<image>` — an `<svg src>`, a font by URL, a Lottie file — through
+  `LynxUIContext.genericResourceFetcher`, ships no default, and the option
+  that gates it follows a `LynxEnv` default that is off; XElement's `<svg>`
+  messaged nil and drew nothing, with no log. The default fetcher is a plain
+  `URLSession` `GET`.
+* `LynxViewPlugin.setResourceFetcher(_:)` lets a host swap it for a
+  `LynxGenericResourceFetcher` that adds headers or shares a cache; `nil`
+  restores the default.
+
 ## 1.8.1
 
 * The platform view factory now registers with the `WaitUntilTouchesEnded`

@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import com.lynx.react.bridge.JavaOnlyArray
+import com.lynx.tasm.LynxBooleanOption
 import com.lynx.tasm.LynxError
 import com.lynx.tasm.LynxView
 import com.lynx.tasm.LynxViewBuilder
@@ -33,6 +34,15 @@ internal class LynxPlatformView(
 
     private val lynxView: LynxView = LynxViewBuilder()
         .also { XElementSupport.addBehaviorsIfPresent(it) }
+        // Anything that is not an <image> — an <svg src>, a font by URL —
+        // is fetched through this, and Lynx ships no default: without one
+        // XElement's <svg> logs "getGenericResourceFetcher is null" and
+        // draws nothing. The option has to be switched on explicitly too;
+        // left unset it follows a LynxEnv default that is off.
+        .also {
+            it.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE)
+            it.setGenericResourceFetcher(LynxViewPlugin.resourceFetcher())
+        }
         // Per-view, not global: this is how the bridge module learns which
         // Flutter view it belongs to. Lynx hands the third argument back as
         // the module's `mParam` when it constructs it, and a wrapper
