@@ -14,6 +14,7 @@ class _RecordingPlatform extends LynxViewPlatform {
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
+    LynxAndroidViewMode androidViewMode = LynxAndroidViewMode.textureLayer,
   }) {
     // Hand the controller a viewId the way a real platform view would, so the
     // widget under test exercises the same attach path.

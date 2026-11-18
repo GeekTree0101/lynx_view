@@ -1,3 +1,26 @@
+## 1.10.0
+
+* Opt-in Hybrid Composition++ on Android:
+  `LynxView(androidViewMode: LynxAndroidViewMode.hybridCompositionPlusPlus)`.
+  The native view then stays in the Android view hierarchy and is composited
+  by the system in step with Flutter's surface, instead of being copied
+  through a texture. The default is unchanged — nothing moves unless a
+  `LynxView` asks for it.
+* HCPP only exists on Android 14 (API 34) and newer, with Impeller on Vulkan,
+  in an app that opted in through `AndroidManifest.xml`. Everywhere else the
+  same `LynxView` silently uses the default mode, so one code path serves
+  every device. `LynxView.isAndroidHcppSupported()` tells which one is in
+  effect.
+* Read the README section before opting in: the manifest switch is
+  engine-wide, and while HCPP is active Flutter refuses to create classic
+  Hybrid Composition views (`initExpensiveAndroidView`) anywhere in the app.
+* Touch delivery is the same in both modes — Flutter's gesture arena still
+  decides what reaches the bundle — so this is a rendering change, not a
+  gesture one.
+* Requires Flutter 3.32 (Dart 3.8) or newer and
+  `lynx_view_platform_interface` 1.7.0. No native change;
+  `lynx_view_android` and `lynx_view_ios` stay at 1.9.0.
+
 ## 1.9.0
 
 * `<svg src="https://…">` now renders. Lynx fetches anything that is not an

@@ -1,11 +1,12 @@
 name: lynx_view_platform_interface
 description: "A common platform interface for the lynx_view plugin."
-version: 1.6.0
+version: 1.7.0
 homepage: https://github.com/GeekTree0101/lynx_view
 
 environment:
-  sdk: ^3.7.2
-  flutter: ">=1.17.0"
+  sdk: ^3.8.0
+  # PlatformViewsService.initHybridAndroidView (HCPP) first shipped in 3.32.
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:

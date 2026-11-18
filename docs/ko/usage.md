@@ -43,6 +43,43 @@ Expanded(
 
 뒤집어 말하면 **크기가 0인 자리에 놓인 `LynxView`는 번들을 받지 않습니다.** 높이 0인 박스에 넣어 두고 미리 데워지길 기대하면 안 됩니다.
 
+## Android 임베딩 방식 — Hybrid Composition++ (선택)
+
+기본값은 지금까지와 같습니다. 네이티브 뷰가 텍스처에 그려지고, Flutter가 그 텍스처를 합성합니다(`AndroidView`).
+
+`LynxView` 하나하나가 Hybrid Composition++(HCPP)를 요청할 수 있습니다. 이때 네이티브 뷰는 Android 뷰 계층에 그대로 남고, 시스템이 Flutter 화면과 맞춰 합성합니다.
+
+```dart
+LynxView(
+  controller: _controller,
+  androidViewMode: LynxAndroidViewMode.hybridCompositionPlusPlus,
+)
+```
+
+HCPP는 엔진 기능이라 조건이 있습니다.
+
+- Android 14(API 34) 이상, Impeller + Vulkan.
+- Flutter 3.32 이상.
+- `AndroidManifest.xml`의 `<application>` 안에 opt-in. 키 이름이 중간에 바뀌었습니다. 엔진은 모르는 키를 무시하므로 둘 다 적어도 됩니다.
+
+```xml
+<!-- Flutter 3.32 ~ 3.41 -->
+<meta-data
+    android:name="io.flutter.embedding.android.EnableSurfaceControl"
+    android:value="true" />
+<!-- 그 이후 -->
+<meta-data
+    android:name="io.flutter.embedding.android.EnableHcpp"
+    android:value="true" />
+```
+
+조건이 하나라도 빠진 기기에서는 같은 `LynxView`가 알아서 기본 방식으로 뜹니다. 앱 코드에서 분기할 필요가 없습니다. 지금 어느 쪽인지는 `await LynxView.isAndroidHcppSupported()`로 확인합니다.
+
+켜기 전에 알아야 할 두 가지:
+
+- **매니페스트 스위치는 엔진 전체에 걸립니다.** HCPP가 켜진 기기에서는 Flutter가 기존 Hybrid Composition 뷰(`PlatformViewsService.initExpensiveAndroidView`, 또는 그쪽으로 폴백하는 `initSurfaceAndroidView`) 생성을 거부하고 예외를 던집니다. 앱의 다른 플랫폼 뷰(광고·지도·웹뷰)를 먼저 확인하세요. 일반 `AndroidView`는 그대로 됩니다.
+- **바뀌는 것은 렌더링이지 터치가 아닙니다.** 두 방식 모두 Flutter가 터치를 먼저 받고 제스처 아레나가 번들로 넘길지 정합니다. `gestureRecognizers` 동작은 같습니다.
+
 ## `LynxViewController`의 리소스 정리
 
 `dispose()`는 이 컨트롤러가 소유한 네이티브 `LynxView` 리소스를 **명시적으로** 해제하는 유일한 지점입니다 (`CameraController`/`VideoPlayerController`와 같은 관례). Flutter 위젯이 트리에서 빠졌다고 자동으로 정리되는 게 아니라, 앱이 `State.dispose()`에서 직접 호출해야 합니다.

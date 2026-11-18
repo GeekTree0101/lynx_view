@@ -8,6 +8,7 @@ import 'package:lynx_view_platform_interface/lynx_view_platform_interface.dart';
 class _FakeLynxViewPlatform extends LynxViewPlatform {
   int nextViewId = 1;
   final List<String> calls = <String>[];
+  final List<LynxAndroidViewMode> builtViewModes = <LynxAndroidViewMode>[];
   final Map<int, LynxViewEventHandler> handlers = <int, LynxViewEventHandler>{};
 
   @override
@@ -15,7 +16,9 @@ class _FakeLynxViewPlatform extends LynxViewPlatform {
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
+    LynxAndroidViewMode androidViewMode = LynxAndroidViewMode.textureLayer,
   }) {
+    builtViewModes.add(androidViewMode);
     return const SizedBox.shrink();
   }
 
@@ -59,6 +62,35 @@ void main() {
   setUp(() {
     fakePlatform = _FakeLynxViewPlatform();
     LynxViewPlatform.instance = fakePlatform;
+  });
+
+  testWidgets('LynxView uses the texture-layer Android mode by default', (
+    tester,
+  ) async {
+    final controller = LynxViewController(templateUrl: 'https://a.example/1.bundle');
+
+    await tester.pumpWidget(LynxView(controller: controller));
+
+    expect(fakePlatform.builtViewModes, <LynxAndroidViewMode>[
+      LynxAndroidViewMode.textureLayer,
+    ]);
+  });
+
+  testWidgets('LynxView hands the requested Android mode to the platform', (
+    tester,
+  ) async {
+    final controller = LynxViewController(templateUrl: 'https://a.example/1.bundle');
+
+    await tester.pumpWidget(
+      LynxView(
+        controller: controller,
+        androidViewMode: LynxAndroidViewMode.hybridCompositionPlusPlus,
+      ),
+    );
+
+    expect(fakePlatform.builtViewModes, <LynxAndroidViewMode>[
+      LynxAndroidViewMode.hybridCompositionPlusPlus,
+    ]);
   });
 
   test('reload/sendEvent queue until attach() and flush in order', () async {

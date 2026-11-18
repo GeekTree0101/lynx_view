@@ -25,6 +25,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Opts the engine in to Hybrid Composition++, which
+             LynxAndroidViewMode.hybridCompositionPlusPlus needs. The key was
+             renamed after Flutter 3.41; an engine ignores the one it does not
+             know. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableSurfaceControl"
+            android:value="true" />
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableHcpp"
+            android:value="true" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'lynx_view_platform.dart';
@@ -32,6 +33,7 @@ class MethodChannelLynxView extends LynxViewPlatform {
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
+    LynxAndroidViewMode androidViewMode = LynxAndroidViewMode.textureLayer,
   }) {
     void onCreated(int viewId) {
       final MethodChannel channel =
@@ -43,10 +45,20 @@ class MethodChannelLynxView extends LynxViewPlatform {
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return AndroidView(
+        final Widget textureLayer = AndroidView(
           viewType: _kViewType,
           creationParams: creationParams,
           creationParamsCodec: const StandardMessageCodec(),
+          onPlatformViewCreated: onCreated,
+          gestureRecognizers: gestureRecognizers ?? const {},
+        );
+        if (androidViewMode != LynxAndroidViewMode.hybridCompositionPlusPlus) {
+          return textureLayer;
+        }
+        return _HcppOrFallback(
+          support: this,
+          fallback: textureLayer,
+          creationParams: creationParams,
           onPlatformViewCreated: onCreated,
           gestureRecognizers: gestureRecognizers ?? const {},
         );
@@ -64,6 +76,28 @@ class MethodChannelLynxView extends LynxViewPlatform {
           'Only Android and iOS are supported.',
         );
     }
+  }
+
+  Future<bool>? _hcppSupport;
+
+  /// The settled answer of [isAndroidHcppSupported], once there is one — lets
+  /// every view after the first build without waiting a frame for it.
+  bool? _hcppSupported;
+
+  @override
+  Future<bool> isAndroidHcppSupported() => _hcppSupport ??= _checkHcpp();
+
+  Future<bool> _checkHcpp() async {
+    bool supported = false;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        supported = await HybridAndroidViewController.checkIfSupported();
+      } catch (_) {
+        // An engine that does not answer cannot do HCPP either.
+        supported = false;
+      }
+    }
+    return _hcppSupported = supported;
   }
 
   @override
@@ -227,4 +261,80 @@ class MethodChannelLynxView extends LynxViewPlatform {
   /// Byte counts cross the channel as `int` on one platform and `long` on the
   /// other; both arrive as `num` here.
   int _int(dynamic value) => (value as num?)?.toInt() ?? 0;
+}
+
+/// Builds the native view with Hybrid Composition++ where the engine can do
+/// it, and with [fallback] (the plain texture-layer `AndroidView`) where it
+/// cannot.
+///
+/// Asking the engine for an HCPP view it cannot make is an error, not a
+/// downgrade, so the question has to be settled first. It is one channel
+/// round trip, asked once per process: only the very first view waits for
+/// it, and holds an empty box rather than building the fallback — building
+/// it and then swapping would create the native view twice.
+class _HcppOrFallback extends StatefulWidget {
+  const _HcppOrFallback({
+    required this.support,
+    required this.fallback,
+    required this.creationParams,
+    required this.onPlatformViewCreated,
+    required this.gestureRecognizers,
+  });
+
+  final MethodChannelLynxView support;
+  final Widget fallback;
+  final Map<String, dynamic> creationParams;
+  final PlatformViewCreatedCallback onPlatformViewCreated;
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
+  @override
+  State<_HcppOrFallback> createState() => _HcppOrFallbackState();
+}
+
+class _HcppOrFallbackState extends State<_HcppOrFallback> {
+  bool? _supported;
+
+  @override
+  void initState() {
+    super.initState();
+    _supported = widget.support._hcppSupported;
+    if (_supported == null) {
+      widget.support.isAndroidHcppSupported().then((bool supported) {
+        if (mounted) setState(() => _supported = supported);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool? supported = _supported;
+    if (supported == null) return const SizedBox.expand();
+    if (!supported) return widget.fallback;
+
+    final TextDirection layoutDirection =
+        Directionality.maybeOf(context) ?? TextDirection.ltr;
+    return PlatformViewLink(
+      viewType: _kViewType,
+      surfaceFactory: (BuildContext context, PlatformViewController controller) {
+        return AndroidViewSurface(
+          controller: controller as AndroidViewController,
+          gestureRecognizers: widget.gestureRecognizers,
+          hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+        );
+      },
+      onCreatePlatformView: (PlatformViewCreationParams params) {
+        return PlatformViewsService.initHybridAndroidView(
+            id: params.id,
+            viewType: _kViewType,
+            layoutDirection: layoutDirection,
+            creationParams: widget.creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: () => params.onFocusChanged(true),
+          )
+          ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+          ..addOnPlatformViewCreatedListener(widget.onPlatformViewCreated)
+          ..create();
+      },
+    );
+  }
 }

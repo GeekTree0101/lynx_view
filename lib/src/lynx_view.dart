@@ -27,6 +27,7 @@ class LynxView extends StatefulWidget {
     super.key,
     required this.controller,
     this.gestureRecognizers,
+    this.androidViewMode = LynxAndroidViewMode.textureLayer,
   });
 
   final LynxViewController controller;
@@ -43,6 +44,25 @@ class LynxView extends StatefulWidget {
   /// },
   /// ```
   final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
+
+  /// How Android embeds the native view. iOS ignores this.
+  ///
+  /// The default, [LynxAndroidViewMode.textureLayer], is what this package has
+  /// always done. [LynxAndroidViewMode.hybridCompositionPlusPlus] asks for
+  /// Hybrid Composition++ and quietly falls back to the default wherever the
+  /// device or the app build cannot do it — check with
+  /// [isAndroidHcppSupported]. It needs an opt-in in `AndroidManifest.xml`
+  /// that affects the app's other platform views; see the README.
+  ///
+  /// Decided when the view is created. Changing it on a live [LynxView]
+  /// throws the native view away and builds another one.
+  final LynxAndroidViewMode androidViewMode;
+
+  /// Whether [LynxAndroidViewMode.hybridCompositionPlusPlus] takes effect on
+  /// this device and app build. `false` on iOS, on Android below 14, without
+  /// Impeller on Vulkan, and when the app has not opted in.
+  static Future<bool> isAndroidHcppSupported() =>
+      LynxViewPlatform.instance.isAndroidHcppSupported();
 
   @override
   State<LynxView> createState() => _LynxViewState();
@@ -79,6 +99,7 @@ class _LynxViewState extends State<LynxView> {
       creationParams: widget.controller.creationParams,
       onPlatformViewCreated: widget.controller.attach,
       gestureRecognizers: widget.gestureRecognizers,
+      androidViewMode: widget.androidViewMode,
     );
   }
 }
