@@ -12,6 +12,30 @@ class LynxLoadError {
   String toString() => 'LynxLoadError(code: $code, message: $message)';
 }
 
+/// How Android puts the native `LynxView` on screen. iOS ignores this.
+enum LynxAndroidViewMode {
+  /// Flutter's default `AndroidView` embedding (Texture Layer Hybrid
+  /// Composition): the native view draws into a texture that Flutter
+  /// composites. Works on every device and with every other platform view.
+  textureLayer,
+
+  /// Hybrid Composition++ (HCPP): the native view stays in the Android view
+  /// hierarchy and is composited by the system, in sync with Flutter's own
+  /// surface, instead of being copied through a texture.
+  ///
+  /// Only takes effect where the engine can do it — Android 14 (API 34) or
+  /// newer, Impeller on Vulkan, and the app opted in to HCPP in its
+  /// `AndroidManifest.xml`. Anywhere else the view silently falls back to
+  /// [textureLayer], so asking for this is always safe.
+  ///
+  /// The opt-in is engine-wide and has a cost outside this package: while it
+  /// is on, Flutter refuses to create classic Hybrid Composition views
+  /// (`PlatformViewsService.initExpensiveAndroidView`, or an
+  /// `initSurfaceAndroidView` that falls back to it) on the devices where
+  /// HCPP is active.
+  hybridCompositionPlusPlus,
+}
+
 /// How much memory Lynx should hand back when the platform reports pressure.
 ///
 /// The raw [value]s are Lynx's own — `LynxMemoryPressureLevel` on iOS and

@@ -58,12 +58,27 @@ abstract class LynxViewPlatform extends PlatformInterface {
   /// allowed to win from Flutter. Without it the platform view only receives
   /// what no Flutter widget claims — taps get through, but drags do not, so
   /// anything scrollable inside the Lynx template will not scroll.
+  ///
+  /// [androidViewMode] picks the Android embedding mode; see
+  /// [LynxAndroidViewMode]. Other platforms ignore it.
   Widget buildView({
     required Map<String, dynamic> creationParams,
     required LynxPlatformViewCreatedCallback onPlatformViewCreated,
     Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers,
+    LynxAndroidViewMode androidViewMode = LynxAndroidViewMode.textureLayer,
   }) {
     throw UnimplementedError('buildView() has not been implemented.');
+  }
+
+  /// Whether [LynxAndroidViewMode.hybridCompositionPlusPlus] would actually
+  /// be used on this device and app build, rather than falling back.
+  ///
+  /// Always `false` off Android. The answer cannot change while the process
+  /// lives, so implementations may cache it.
+  Future<bool> isAndroidHcppSupported() {
+    throw UnimplementedError(
+      'isAndroidHcppSupported() has not been implemented.',
+    );
   }
 
   /// Registers the handler that receives load lifecycle and bridge-message

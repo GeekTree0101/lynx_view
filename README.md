@@ -39,6 +39,41 @@ class MyApplication : Application() {
 }
 ```
 
+#### Optional: Hybrid Composition++ (HCPP)
+
+By default the Lynx view is embedded the way Flutter's `AndroidView` does it: it draws into a texture that Flutter composites. A `LynxView` can ask for Hybrid Composition++ instead, where the native view stays in the Android view hierarchy and the system composites it in step with Flutter's surface:
+
+```dart
+LynxView(
+  controller: _controller,
+  androidViewMode: LynxAndroidViewMode.hybridCompositionPlusPlus,
+)
+```
+
+HCPP is an engine feature with hard requirements, and it is off unless the app opts in:
+
+- Android 14 (API 34) or newer, running Impeller on Vulkan.
+- Flutter 3.32 or newer.
+- The opt-in in `android/app/src/main/AndroidManifest.xml`, inside `<application>`. The key was renamed along the way, and an engine ignores the one it does not know, so declaring both is safe:
+
+```xml
+<!-- Flutter 3.32 – 3.41 -->
+<meta-data
+    android:name="io.flutter.embedding.android.EnableSurfaceControl"
+    android:value="true" />
+<!-- Newer Flutter -->
+<meta-data
+    android:name="io.flutter.embedding.android.EnableHcpp"
+    android:value="true" />
+```
+
+Where any of that is missing, the same `LynxView` falls back to the default mode on its own — no branching in app code. `await LynxView.isAndroidHcppSupported()` reports which one is in effect.
+
+Two things to know before turning it on:
+
+- **The manifest switch is engine-wide.** On devices where HCPP is active, Flutter refuses to create classic Hybrid Composition views — `PlatformViewsService.initExpensiveAndroidView`, or `initSurfaceAndroidView` when it falls back to it — and throws instead. Check every other platform view in the app (ads, maps, web views) first. Plain `AndroidView` keeps working.
+- **It changes rendering, not touch.** In both modes Flutter receives the touch first and its gesture arena decides what reaches the bundle, so `gestureRecognizers` behaves the same.
+
 ### 3. iOS setup
 
 No manual Podfile changes needed. In Xcode, set **User Script Sandboxing** to `NO` (a Lynx SDK build requirement).

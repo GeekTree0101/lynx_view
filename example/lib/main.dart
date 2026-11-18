@@ -33,8 +33,18 @@ class LynxDemoPage extends StatefulWidget {
 }
 
 class _LynxDemoPageState extends State<LynxDemoPage> {
-  static const _defaultTemplateUrl =
-      'https://your-bucket.s3.amazonaws.com/bundles/home.lynx.bundle';
+  static const _defaultTemplateUrl = String.fromEnvironment(
+    'TEMPLATE_URL',
+    defaultValue:
+        'https://your-bucket.s3.amazonaws.com/bundles/home.lynx.bundle',
+  );
+
+  /// `flutter run --dart-define=ANDROID_HCPP=true` embeds the view with
+  /// Hybrid Composition++ where the device supports it. The manifest opt-in
+  /// is already in this example's AndroidManifest.xml.
+  static const _androidViewMode = bool.fromEnvironment('ANDROID_HCPP')
+      ? LynxAndroidViewMode.hybridCompositionPlusPlus
+      : LynxAndroidViewMode.textureLayer;
 
   final _urlController = TextEditingController(text: _defaultTemplateUrl);
   final _log = <String>[];
@@ -51,6 +61,11 @@ class _LynxDemoPageState extends State<LynxDemoPage> {
     _controller.addJavaScriptChannel(
       'demo',
       onMessageReceived: (message) => _appendLog('from JS: ${message.data}'),
+    );
+    LynxView.isAndroidHcppSupported().then(
+      (supported) => _appendLog(
+        'android view mode: ${_androidViewMode.name} (HCPP supported: $supported)',
+      ),
     );
   }
 
@@ -110,6 +125,7 @@ class _LynxDemoPageState extends State<LynxDemoPage> {
               color: Colors.black12,
               child: LynxView(
                 controller: _controller,
+                androidViewMode: _androidViewMode,
                 // Without this the template's own scroll-view never receives
                 // drags — Flutter keeps them.
                 gestureRecognizers: {

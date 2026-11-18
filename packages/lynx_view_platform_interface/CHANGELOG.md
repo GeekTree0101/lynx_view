@@ -1,3 +1,15 @@
+## 1.7.0
+
+* `LynxAndroidViewMode` and a matching `androidViewMode` argument on
+  `LynxViewPlatform.buildView`. `hybridCompositionPlusPlus` builds the Android
+  view with Flutter's Hybrid Composition++ (`initHybridAndroidView`) where the
+  engine supports it and falls back to the texture-layer `AndroidView`
+  everywhere else. The default is unchanged.
+* `LynxViewPlatform.isAndroidHcppSupported` reports whether that mode takes
+  effect on the running device and app build.
+* Requires Flutter 3.32 (Dart 3.8) or newer — the first release with the HCPP
+  API. Implementations that override `buildView` need the new argument.
+
 ## 1.6.0
 
 * `LynxFontAsset` — a font family name paired with the Flutter asset key of
