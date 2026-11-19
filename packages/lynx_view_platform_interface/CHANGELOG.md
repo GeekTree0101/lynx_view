@@ -1,3 +1,8 @@
+## 1.8.0
+
+* `LynxViewPlatform.setVisible(viewId, visible:)`, sent as `setVisible` on the
+  per-view channel with `{visible: bool}`.
+
 ## 1.7.0
 
 * `LynxAndroidViewMode` and a matching `androidViewMode` argument on

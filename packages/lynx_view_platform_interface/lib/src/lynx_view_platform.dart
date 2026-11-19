@@ -105,6 +105,19 @@ abstract class LynxViewPlatform extends PlatformInterface {
     throw UnimplementedError('sendEvent() has not been implemented.');
   }
 
+  /// Tells the native `LynxView` identified by [viewId] whether it is on
+  /// screen.
+  ///
+  /// Flutter hides a platform view by not painting it (an `IndexedStack` tab,
+  /// a covered route), but the native view never hears about it: it stays
+  /// visible to the OS and keeps redrawing — CSS animations included — and on
+  /// Android every redraw also wakes a Flutter frame. Hidden, the native view
+  /// stops drawing and Lynx gets `onEnterBackground`; shown again, it draws
+  /// and gets `onEnterForeground`.
+  Future<void> setVisible(int viewId, {required bool visible}) {
+    throw UnimplementedError('setVisible() has not been implemented.');
+  }
+
   /// Releases the native `LynxView` resources owned by [viewId]. Idempotent.
   Future<void> dispose(int viewId) {
     throw UnimplementedError('dispose() has not been implemented.');

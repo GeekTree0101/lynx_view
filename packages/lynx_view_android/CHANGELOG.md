@@ -1,3 +1,9 @@
+## 1.10.0
+
+* Answers `setVisible`: toggles `LynxView` between `VISIBLE` and `INVISIBLE`
+  and calls `onEnterForeground` / `onEnterBackground`. A hidden view stops
+  producing texture frames, so it no longer wakes Flutter.
+
 ## 1.9.0
 
 * Every `LynxViewBuilder` now carries a generic resource fetcher and has the

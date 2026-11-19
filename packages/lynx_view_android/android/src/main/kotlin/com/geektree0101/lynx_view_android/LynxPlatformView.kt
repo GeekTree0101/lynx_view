@@ -183,12 +183,35 @@ internal class LynxPlatformView(
                 lynxView.sendGlobalEvent(name, JavaOnlyArray().apply { add(toLynxValue(args)) })
                 result.success(null)
             }
+            "setVisible" -> {
+                val visible = call.argument<Boolean>("visible")
+                if (visible == null) {
+                    result.error("invalid_args", "visible is required", null)
+                    return
+                }
+                setVisible(visible)
+                result.success(null)
+            }
             "dispose" -> {
                 disposeInternal()
                 result.success(null)
             }
             else -> result.notImplemented()
         }
+    }
+
+    /**
+     * Flutter hides a platform view by not painting it, so without this the
+     * native view stays VISIBLE to Android and keeps drawing — a looping CSS
+     * animation redraws every frame, and each redraw lands as a new texture
+     * frame that wakes Flutter. INVISIBLE (not GONE) keeps the size, so the
+     * template does not relayout when it comes back.
+     */
+    private fun setVisible(visible: Boolean) {
+        val target = if (visible) View.VISIBLE else View.INVISIBLE
+        if (lynxView.visibility == target) return
+        lynxView.visibility = target
+        if (visible) lynxView.onEnterForeground() else lynxView.onEnterBackground()
     }
 
     /**
