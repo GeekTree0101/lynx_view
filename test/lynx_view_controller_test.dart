@@ -46,6 +46,11 @@ class _FakeLynxViewPlatform extends LynxViewPlatform {
   }
 
   @override
+  Future<void> setVisible(int viewId, {required bool visible}) async {
+    calls.add('setVisible:$viewId:$visible');
+  }
+
+  @override
   Future<void> dispose(int viewId) async {
     calls.add('dispose:$viewId');
   }
@@ -112,6 +117,19 @@ void main() {
       'sendEvent:7:chan',
     ]);
     expect(controller.templateUrl, 'https://a.example/2.bundle');
+  });
+
+  test('setVisible reaches the native view, queued until attach()', () async {
+    final controller = LynxViewController(templateUrl: 'https://a.example/1.bundle');
+
+    final Future<void> hidden = controller.setVisible(false);
+    expect(fakePlatform.calls, isEmpty);
+
+    controller.attach(4);
+    await hidden;
+    await controller.setVisible(true);
+
+    expect(fakePlatform.calls, <String>['setVisible:4:false', 'setVisible:4:true']);
   });
 
   test('calls made after attach() run immediately', () async {

@@ -1,3 +1,21 @@
+## 1.11.0
+
+* `LynxViewController.setVisible(bool)` tells the native view whether it is
+  on screen. Flutter hides a platform view by not painting it — a tab kept
+  alive in an `IndexedStack`, a page under another route — and the native
+  view never hears about it: it stays visible to the OS and keeps redrawing.
+  A looping CSS animation then redraws every frame, and on Android each
+  redraw lands as a new texture frame that also schedules a Flutter frame,
+  so a hidden tab keeps the whole app busy.
+* Hidden, the native view stops drawing (`View.INVISIBLE` on Android,
+  `isHidden` on iOS — layout is kept, so nothing relayouts on return) and
+  Lynx gets `onEnterBackground`; shown, it draws again and gets
+  `onEnterForeground`. The bundle keeps its state.
+* Nothing changes unless the host calls it. Calls made before the native view
+  exists queue like `reload`/`sendEvent`.
+* Requires `lynx_view_platform_interface` 1.8.0, `lynx_view_android` 1.10.0
+  and `lynx_view_ios` 1.10.0.
+
 ## 1.10.0
 
 * Opt-in Hybrid Composition++ on Android:

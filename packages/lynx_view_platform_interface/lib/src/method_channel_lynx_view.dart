@@ -194,6 +194,14 @@ class MethodChannelLynxView extends LynxViewPlatform {
   }
 
   @override
+  Future<void> setVisible(int viewId, {required bool visible}) {
+    return _requireChannel(viewId).invokeMethod<void>(
+      'setVisible',
+      <String, dynamic>{'visible': visible},
+    );
+  }
+
+  @override
   Future<void> dispose(int viewId) async {
     final MethodChannel? channel = _channels.remove(viewId);
     _handlers.remove(viewId);

@@ -1,3 +1,9 @@
+## 1.10.0
+
+* Answers `setVisible`: toggles `LynxView.isHidden` (the container Flutter
+  positions is left alone) and calls `onEnterForeground` /
+  `onEnterBackground`.
+
 ## 1.9.0
 
 * Every `LynxView` is now built through a `LynxViewBuilder` block that sets a

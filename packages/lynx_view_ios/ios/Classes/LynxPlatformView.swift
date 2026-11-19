@@ -103,11 +103,32 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
             // 1-element array containing the args map.
             lynxView.sendGlobalEvent(name, withParams: [params])
             result(nil)
+        case "setVisible":
+            guard let args = call.arguments as? [String: Any], let visible = args["visible"] as? Bool else {
+                result(FlutterError(code: "invalid_args", message: "visible is required", details: nil))
+                return
+            }
+            setVisible(visible)
+            result(nil)
         case "dispose":
             disposeInternal()
             result(nil)
         default:
             result(FlutterMethodNotImplemented)
+        }
+    }
+
+    /// Flutter hides a platform view by not painting it, so the native view
+    /// never learns it is off screen and keeps animating. Hiding the
+    /// `LynxView` (not the container, which Flutter positions) stops drawing
+    /// without touching layout.
+    private func setVisible(_ visible: Bool) {
+        guard lynxView.isHidden == visible else { return }
+        lynxView.isHidden = !visible
+        if visible {
+            lynxView.onEnterForeground()
+        } else {
+            lynxView.onEnterBackground()
         }
     }
 

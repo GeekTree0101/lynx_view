@@ -190,6 +190,17 @@ NativeModules.FlutterBridge.postMessage('MyChannel', JSON.stringify({ hello: 'fr
 lynx.getJSModule('GlobalEventEmitter').addListener('MyChannel', (data) => console.log('from Flutter:', data));
 ```
 
+### Hidden views: `setVisible`
+
+Flutter hides a platform view by not painting it, but the native `LynxView` is never told. A view in an `IndexedStack` tab you left, or under another route, keeps drawing — a looping CSS animation redraws every frame, and on Android each redraw also wakes a Flutter frame. Tell it when it leaves and comes back:
+
+```dart
+_controller.setVisible(false); // tab hidden / route covered: stops drawing, Lynx gets onEnterBackground
+_controller.setVisible(true);  // shown again: draws, Lynx gets onEnterForeground
+```
+
+The bundle keeps its state; layout is kept, so nothing relayouts on return.
+
 ### Reloading (OTA/CodePush integration point)
 
 This package doesn't ship OTA infrastructure — it just gives your own OTA/CodePush client something to call:

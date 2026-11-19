@@ -121,6 +121,22 @@ class LynxViewController {
     );
   }
 
+  /// Tells the native view whether it is on screen. Call it with `false` when
+  /// the widget is still mounted but not shown — a tab kept alive in an
+  /// `IndexedStack`, a page covered by another route — and with `true` when
+  /// it comes back.
+  ///
+  /// Flutter does not tell the native view on its own. Without this a hidden
+  /// view keeps redrawing (a looping CSS animation never stops), and on
+  /// Android each redraw also schedules a Flutter frame. Hidden, the view
+  /// stops drawing and Lynx gets `onEnterBackground`; the bundle keeps its
+  /// state and picks up where it was when shown again.
+  Future<void> setVisible(bool visible) {
+    return _runOrQueue(
+      () => LynxViewPlatform.instance.setVisible(_viewId!, visible: visible),
+    );
+  }
+
   /// Registers a handler for JS -> Dart messages sent through the built-in
   /// `FlutterBridge` channel named [name] — no custom native module required
   /// on the JS side: `NativeModules.FlutterBridge.postMessage(name, payload)`.
