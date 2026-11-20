@@ -139,4 +139,15 @@ abstract class LynxViewPlatform extends PlatformInterface {
   Future<LynxMemoryUsage> queryMemoryUsage({int? timeoutMs}) {
     throw UnimplementedError('queryMemoryUsage() has not been implemented.');
   }
+
+  /// Whether an `<image>` request can be cancelled once the `<image>` moves
+  /// on (a recycled list cell, a changed `src`, a removed element).
+  ///
+  /// Process-wide and read per request: requests started after the call
+  /// follow it. Off by default.
+  Future<void> setImageRequestCancellation({required bool enabled}) {
+    throw UnimplementedError(
+      'setImageRequestCancellation() has not been implemented.',
+    );
+  }
 }

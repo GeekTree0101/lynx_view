@@ -1,3 +1,8 @@
+## 1.9.0
+
+* `LynxViewPlatform.setImageRequestCancellation(enabled:)`, sent as
+  `setImageRequestCancellation` on the plugin channel with `{enabled: bool}`.
+
 ## 1.8.0
 
 * `LynxViewPlatform.setVisible(viewId, visible:)`, sent as `setVisible` on the

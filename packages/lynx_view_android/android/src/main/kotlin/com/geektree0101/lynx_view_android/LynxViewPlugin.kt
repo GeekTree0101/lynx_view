@@ -33,6 +33,23 @@ object LynxViewPlugin {
     private var initialized = false
     private var customResourceFetcher: LynxGenericResourceFetcher? = null
 
+    @Volatile
+    private var imageRequestCancellation = false
+
+    /**
+     * Lets a scrolled-past `<image>` request actually stop — see
+     * [CancellableImageService]. Off by default. Read per request, so it can be
+     * flipped at any time (say, from a remote flag) and the next image follows
+     * it.
+     */
+    @JvmStatic
+    fun setImageRequestCancellationEnabled(enabled: Boolean) {
+        imageRequestCancellation = enabled
+    }
+
+    @JvmStatic
+    fun isImageRequestCancellationEnabled(): Boolean = imageRequestCancellation
+
     /**
      * Replaces the loader Lynx uses for resources other than `<image>` — an
      * `<svg src="https://…">`, a font or Lottie file named by URL. The
@@ -102,10 +119,21 @@ object LynxViewPlugin {
                     appContext,
                     ImagePipelineConfig.newBuilder(appContext)
                         .setPoolFactory(poolFactory)
+                        // Lynx already asks for the `<image>` box size (its
+                        // default resize). Without this Fresco only honors that
+                        // for JPEG and decodes PNG/WebP at full size; with it
+                        // every format is decoded with a power-of-two sample
+                        // that never drops below the box.
+                        .setDownsampleEnabled(true)
                         .build(),
                 )
             }
-            LynxServiceCenter.inst().registerService(LynxImageService.getInstance())
+            // The stock service, wrapped so a request can be cancelled when its
+            // <image> moves on. Unchanged until
+            // setImageRequestCancellationEnabled(true) — see CancellableImageService.
+            LynxServiceCenter.inst().registerService(
+                CancellableImageService(LynxImageService.getInstance()),
+            )
 
             LynxEnv.inst().init(
                 appContext as Application,
@@ -142,6 +170,7 @@ object LynxViewPlugin {
         synchronized(this) {
             pendingModules.clear()
             customResourceFetcher = null
+            imageRequestCancellation = false
             initialized = false
         }
     }

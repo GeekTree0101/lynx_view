@@ -1,3 +1,16 @@
+## 1.11.0
+
+* Registers the stock `LynxImageService` wrapped in `CancellableImageService`.
+  While `setImageRequestCancellation` is on, it keeps the Fresco `DataSource`
+  of each network request and closes it in `releaseImage`, which cancels the
+  fetch. Memory-cache hits, animated images, prefetch and background images
+  still go to the stock service. Off (the default), every call is passed
+  through unchanged.
+* `LynxViewPlugin.setImageRequestCancellationEnabled(Boolean)` for hosts that
+  set it natively; the plugin channel answers `setImageRequestCancellation`.
+* Fresco, when this plugin initializes it, has downsampling on — PNG and WebP
+  are decoded at the `<image>` box size Lynx asks for, as JPEG already was.
+
 ## 1.10.0
 
 * Answers `setVisible`: toggles `LynxView` between `VISIBLE` and `INVISIBLE`

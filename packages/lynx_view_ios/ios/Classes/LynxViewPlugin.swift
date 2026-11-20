@@ -41,6 +41,14 @@ public final class LynxViewPlugin: NSObject {
         return customResourceFetcher ?? defaultResourceFetcher
     }
 
+    /// Lets a scrolled-past `<image>` request actually stop — see
+    /// `LynxImageRequestCancellation`. Off by default. Applies to requests
+    /// started after the call, so it can be flipped at any time (say, from a
+    /// remote flag) and the next image follows it.
+    public static func setImageRequestCancellationEnabled(_ enabled: Bool) {
+        LynxImageRequestCancellation.isEnabled = enabled
+    }
+
     public static func registerNativeModule(_ name: String, moduleClass: LynxModule.Type) {
         lock.lock()
         defer { lock.unlock() }
@@ -73,6 +81,11 @@ public final class LynxViewPlugin: NSObject {
         // linked but unregistered, so a template using <input> renders an
         // empty box that never takes focus. See LynxXElementRegistry.m.
         LynxXElementRegistry.registerAvailableElements()
+
+        // Swapped in unconditionally — it only changes behavior while
+        // `setImageRequestCancellationEnabled(true)`; otherwise each request
+        // goes straight to the stock loader.
+        LynxImageRequestCancellation.install()
 
         let config = LynxConfig(provider: RemoteTemplateProvider())
         LynxEnv.sharedInstance().prepareConfig(config)
