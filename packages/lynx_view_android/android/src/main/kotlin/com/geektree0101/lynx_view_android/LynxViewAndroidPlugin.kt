@@ -71,6 +71,16 @@ class LynxViewAndroidPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     timeoutMs,
                 )
             }
+            "setImageRequestCancellation" -> {
+                val enabled = call.argument<Boolean>("enabled")
+                if (enabled == null) {
+                    result.error("invalid_args", "enabled must be a bool", null)
+                    return
+                }
+                // Plain field write — safe before LynxEnv exists; read per request.
+                LynxViewPlugin.setImageRequestCancellationEnabled(enabled)
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }

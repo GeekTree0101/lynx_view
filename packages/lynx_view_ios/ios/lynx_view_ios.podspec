@@ -53,6 +53,10 @@ Wraps LynxJS's native LynxView as a Flutter PlatformView (iOS side).
   # is needed here — unlike XElement, whose registry lives in a subspec we
   # cannot pull (see above).
   s.dependency 'LynxService/Image', '4.0.0'
+  # Classes/LynxImageRequestCancellation.m replaces that service's loader to
+  # keep the SDWebImage operation it starts, so it imports SDWebImage directly.
+  # Unpinned: LynxService/Image already pins the version (5.15.5 for 4.0.0).
+  s.dependency 'SDWebImage'
   # Lynx itself supports iOS 10+, but Flutter's own engine requires 12.0+ —
   # that's the binding floor here, not Lynx's.
   s.platform = :ios, '12.0'

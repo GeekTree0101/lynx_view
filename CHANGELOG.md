@@ -1,3 +1,23 @@
+## 1.12.0
+
+* `LynxImageLoading.setRequestCancellation(bool)` lets an `<image>` request
+  stop once the `<image>` moves on — a recycled list cell gets a new `src`,
+  the same `src` is asked for again, the element goes away. Lynx asks the
+  image service to cancel at those moments, but the stock services in Lynx
+  4.0.0 cannot: iOS hands back a cancel block aimed at a request it never
+  stored, and Android never keeps the Fresco `DataSource` it subscribes to.
+  In a long image list every cell flung past kept downloading and decoding
+  behind the ones on screen.
+* Off by default and read per request, so a host can drive it from a remote
+  flag and turn it off without a release. Off, every request takes the stock
+  path unchanged.
+* Android: when the plugin initializes Fresco it now enables downsampling, so
+  PNG and WebP are decoded at the `<image>` box size Lynx already asks for
+  (Fresco honored that size only for JPEG). A host that initializes Fresco
+  itself keeps its own config.
+* Requires `lynx_view_platform_interface` 1.9.0, `lynx_view_android` 1.11.0
+  and `lynx_view_ios` 1.11.0.
+
 ## 1.11.0
 
 * `LynxViewController.setVisible(bool)` tells the native view whether it is

@@ -1,3 +1,17 @@
+## 1.11.0
+
+* `LynxImageRequestCancellation` replaces the stock `LynxImageService`
+  loader at first `LynxView` creation. While it is enabled, the loader keeps
+  the SDWebImage operation it starts and the cancel block Lynx holds cancels
+  it; a cancelled request never reports back, so Lynx does not read the
+  cancellation as an error for a `src` it is asking for again. Requests still
+  running when their `LynxUIImage` goes away are cancelled too. Disabled (the
+  default), each request goes to the stock loader unchanged.
+* `LynxViewPlugin.setImageRequestCancellationEnabled(_:)` for hosts that set
+  it natively; the plugin channel answers `setImageRequestCancellation`.
+* Depends on `SDWebImage` directly (version still pinned by
+  `LynxService/Image`).
+
 ## 1.10.0
 
 * Answers `setVisible`: toggles `LynxView.isHidden` (the container Flutter

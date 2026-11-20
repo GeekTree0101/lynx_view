@@ -218,6 +218,14 @@ class MethodChannelLynxView extends LynxViewPlatform {
   }
 
   @override
+  Future<void> setImageRequestCancellation({required bool enabled}) {
+    return _kPluginChannel.invokeMethod<void>(
+      'setImageRequestCancellation',
+      <String, dynamic>{'enabled': enabled},
+    );
+  }
+
+  @override
   Future<LynxMemoryUsage> queryMemoryUsage({int? timeoutMs}) async {
     final Map<dynamic, dynamic>? raw =
         await _kPluginChannel.invokeMethod<Map<dynamic, dynamic>>(

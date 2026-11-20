@@ -54,6 +54,17 @@ public class LynxViewIosPlugin: NSObject, FlutterPlugin {
                 // delivered on the platform thread.
                 DispatchQueue.main.async { result(Self.encode(usage)) }
             }, timeoutMs: timeoutMs)
+        case "setImageRequestCancellation":
+            guard let enabled = (call.arguments as? [String: Any])?["enabled"] as? Bool else {
+                result(FlutterError(
+                    code: "invalid_args",
+                    message: "enabled must be a bool",
+                    details: nil
+                ))
+                return
+            }
+            LynxViewPlugin.setImageRequestCancellationEnabled(enabled)
+            result(nil)
         default:
             result(FlutterMethodNotImplemented)
         }
