@@ -192,6 +192,10 @@ internal class LynxPlatformView(
                 setVisible(visible)
                 result.success(null)
             }
+            // Android only gets the touches Flutter hands over once the view's
+            // recognizers win, so there is nothing to cut — iOS needs this
+            // because of its WaitUntilTouchesEnded blocking policy.
+            "setTouchEnabled" -> result.success(null)
             "dispose" -> {
                 disposeInternal()
                 result.success(null)

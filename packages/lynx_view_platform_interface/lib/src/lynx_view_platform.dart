@@ -118,6 +118,18 @@ abstract class LynxViewPlatform extends PlatformInterface {
     throw UnimplementedError('setVisible() has not been implemented.');
   }
 
+  /// Tells the native `LynxView` identified by [viewId] whether it may take
+  /// touches.
+  ///
+  /// iOS registers the view with the `WaitUntilTouchesEnded` blocking policy,
+  /// so a gesture Flutter wins (an edge swipe back) keeps reaching Lynx until
+  /// the finger lifts. Disabled, Lynx's touch recognizers are cancelled and
+  /// new touches do not reach the view. Android only gets touches Flutter
+  /// hands over, so there it is a no-op.
+  Future<void> setTouchEnabled(int viewId, {required bool enabled}) {
+    throw UnimplementedError('setTouchEnabled() has not been implemented.');
+  }
+
   /// Releases the native `LynxView` resources owned by [viewId]. Idempotent.
   Future<void> dispose(int viewId) {
     throw UnimplementedError('dispose() has not been implemented.');

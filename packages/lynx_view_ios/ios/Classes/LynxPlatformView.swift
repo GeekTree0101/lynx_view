@@ -110,6 +110,13 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
             }
             setVisible(visible)
             result(nil)
+        case "setTouchEnabled":
+            guard let args = call.arguments as? [String: Any], let enabled = args["enabled"] as? Bool else {
+                result(FlutterError(code: "invalid_args", message: "enabled is required", details: nil))
+                return
+            }
+            setTouchEnabled(enabled)
+            result(nil)
         case "dispose":
             disposeInternal()
             result(nil)
@@ -129,6 +136,32 @@ final class LynxPlatformView: NSObject, FlutterPlatformView {
             lynxView.onEnterForeground()
         } else {
             lynxView.onEnterBackground()
+        }
+    }
+
+    /// Recognizers `setTouchEnabled(false)` switched off — exactly these are
+    /// switched back on, so one Lynx disabled on its own stays disabled.
+    private var touchPausedRecognizers: [UIGestureRecognizer] = []
+    private var touchEnabled = true
+
+    /// The view is registered with `WaitUntilTouchesEnded`, so when Flutter
+    /// wins a gesture that started on it (an edge swipe back) the native block
+    /// only lands when the finger lifts — Lynx's `LynxTouchHandler`, a
+    /// recognizer on the root `LynxView`, keeps getting every move and the
+    /// bundle reacts to a swipe that is already taking the page away.
+    /// Disabling a recognizer cancels it on the spot (the bundle gets
+    /// `touchcancel`); turning off the container's interaction keeps new
+    /// touches out until the host says the gesture is over.
+    private func setTouchEnabled(_ enabled: Bool) {
+        guard enabled != touchEnabled else { return }
+        touchEnabled = enabled
+        containerView.isUserInteractionEnabled = enabled
+        if enabled {
+            touchPausedRecognizers.forEach { $0.isEnabled = true }
+            touchPausedRecognizers = []
+        } else {
+            touchPausedRecognizers = (lynxView.gestureRecognizers ?? []).filter { $0.isEnabled }
+            touchPausedRecognizers.forEach { $0.isEnabled = false }
         }
     }
 

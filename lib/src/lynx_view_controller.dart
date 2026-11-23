@@ -137,6 +137,24 @@ class LynxViewController {
     );
   }
 
+  /// Tells the native view whether it may take touches. Call it with `false`
+  /// while Flutter owns a gesture that runs across the view — an iOS edge
+  /// swipe back over a full-screen bundle — and with `true` once it ends.
+  ///
+  /// On iOS the plugin registers the view with the `WaitUntilTouchesEnded`
+  /// blocking policy, so a gesture Flutter wins is only blocked natively when
+  /// the finger lifts: until then Lynx still gets every `touchmove` and the
+  /// bundle reacts to a swipe that is already moving the page away (a
+  /// carousel drags along, JS work lands on every frame of the transition).
+  /// Disabled, Lynx's touch recognizers are cancelled — the bundle gets
+  /// `touchcancel` — and new touches do not reach the view. On Android touches
+  /// only reach the view when Flutter hands them over, so this is a no-op.
+  Future<void> setTouchEnabled(bool enabled) {
+    return _runOrQueue(
+      () => LynxViewPlatform.instance.setTouchEnabled(_viewId!, enabled: enabled),
+    );
+  }
+
   /// Registers a handler for JS -> Dart messages sent through the built-in
   /// `FlutterBridge` channel named [name] — no custom native module required
   /// on the JS side: `NativeModules.FlutterBridge.postMessage(name, payload)`.

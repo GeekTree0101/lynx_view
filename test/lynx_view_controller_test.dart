@@ -51,6 +51,11 @@ class _FakeLynxViewPlatform extends LynxViewPlatform {
   }
 
   @override
+  Future<void> setTouchEnabled(int viewId, {required bool enabled}) async {
+    calls.add('setTouchEnabled:$viewId:$enabled');
+  }
+
+  @override
   Future<void> dispose(int viewId) async {
     calls.add('dispose:$viewId');
   }
@@ -130,6 +135,22 @@ void main() {
     await controller.setVisible(true);
 
     expect(fakePlatform.calls, <String>['setVisible:4:false', 'setVisible:4:true']);
+  });
+
+  test('setTouchEnabled reaches the native view, queued until attach()', () async {
+    final controller = LynxViewController(templateUrl: 'https://a.example/1.bundle');
+
+    final Future<void> off = controller.setTouchEnabled(false);
+    expect(fakePlatform.calls, isEmpty);
+
+    controller.attach(6);
+    await off;
+    await controller.setTouchEnabled(true);
+
+    expect(
+      fakePlatform.calls,
+      <String>['setTouchEnabled:6:false', 'setTouchEnabled:6:true'],
+    );
   });
 
   test('calls made after attach() run immediately', () async {

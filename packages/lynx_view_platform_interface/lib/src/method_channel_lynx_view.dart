@@ -202,6 +202,14 @@ class MethodChannelLynxView extends LynxViewPlatform {
   }
 
   @override
+  Future<void> setTouchEnabled(int viewId, {required bool enabled}) {
+    return _requireChannel(viewId).invokeMethod<void>(
+      'setTouchEnabled',
+      <String, dynamic>{'enabled': enabled},
+    );
+  }
+
+  @override
   Future<void> dispose(int viewId) async {
     final MethodChannel? channel = _channels.remove(viewId);
     _handlers.remove(viewId);

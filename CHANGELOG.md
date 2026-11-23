@@ -1,3 +1,13 @@
+## Unreleased
+
+* `LynxViewController.setTouchEnabled(bool)` keeps touches away from the native
+  view while Flutter owns a gesture running across it. iOS registers the view
+  with `WaitUntilTouchesEnded`, so an edge swipe back that Flutter wins still
+  fed every `touchmove` to Lynx until the finger lifted — a carousel dragged
+  along with the page and the bundle's JS ran on every frame of the
+  transition. Disabled, Lynx's touch recognizers are cancelled (the bundle
+  gets `touchcancel`) and new touches do not reach the view. No-op on Android.
+
 ## 1.11.0
 
 * `LynxViewController.setVisible(bool)` tells the native view whether it is
