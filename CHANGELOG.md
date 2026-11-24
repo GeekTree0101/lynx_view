@@ -1,3 +1,8 @@
+## 1.13.1
+
+* Android: scroll-coordinator drag `offset` events are sent after the frame's traversal, not
+  inside `onPreDraw` (torn frames / blank bands). Requires `lynx_view_android` 1.12.1.
+
 ## 1.13.0
 
 * Android: `<scroll-coordinator>` fires `offset` while the header is dragged
