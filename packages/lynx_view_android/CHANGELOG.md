@@ -1,3 +1,9 @@
+## 1.12.1
+
+* `<scroll-coordinator>` drag `offset` events are now sent after the frame's layout/draw pass
+  (posted from `onPreDraw`, one per frame) instead of inside it. Sending inside pre-draw ran
+  Lynx's main-thread script during the traversal and produced torn frames and blank bands.
+
 ## 1.12.0
 
 * `<scroll-coordinator>` now fires its `offset` event while a finger drags the

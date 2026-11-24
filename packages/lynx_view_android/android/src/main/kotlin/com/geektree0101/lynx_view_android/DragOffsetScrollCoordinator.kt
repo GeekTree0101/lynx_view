@@ -29,8 +29,8 @@ import com.lynx.tasm.utils.PixelUtils
  * for the generated `$$PropsSetter`), this delegates every factory call to XElement's own
  * behavior and, once the UI exists, watches the `AppBarLayout` every frame: whenever its vertical
  * offset changed since the last frame, the same `{offset, height}` event XElement would have sent
- * is sent, in dip, from the UI thread. Movement through any code path is caught — nested
- * pre-scroll, fling, programmatic.
+ * is sent, in dip, from the UI thread after that frame's traversal. Movement through any code
+ * path is caught — nested pre-scroll, fling, programmatic.
  *
  * XElement's own listener keeps running, so a fling may deliver each offset twice. Receivers
  * treat the event as "paint this offset", which is idempotent.
@@ -86,13 +86,34 @@ internal class DragOffsetScrollCoordinatorBehavior(
 /**
  * Per-frame watcher on one `AppBarLayout`. Installed when the view attaches to a window and
  * removed when it detaches; the UI's own lifecycle owns the view, so nothing else to release.
+ *
+ * The offset is *read* in `onPreDraw`, but the event is *sent* from a posted runnable, after the
+ * current traversal. Sending inside pre-draw ran Lynx's main-thread script (and its element
+ * flush) in the middle of the layout/draw pass, which produced torn frames and blank bands on a
+ * device. One runnable per frame; the latest offset wins.
  */
 private class DragOffsetEmitter(
     private val ui: LynxUI<*>,
     private val appBar: AppBarLayout,
 ) : ViewTreeObserver.OnPreDrawListener, View.OnAttachStateChangeListener {
 
-    private var lastOffset = Int.MIN_VALUE
+    private var lastSeen = Int.MIN_VALUE
+    private var lastSent = Int.MIN_VALUE
+    private var posted = false
+    private val emit = Runnable {
+        posted = false
+        val offset = lastSeen
+        if (offset == lastSent || !appBar.isAttachedToWindow) return@Runnable
+        val range = appBar.totalScrollRange
+        if (range <= 0) return@Runnable
+        val context = ui.lynxContext ?: return@Runnable
+        lastSent = offset
+        // Same shape and units as XElement's own `offset` event: dip integers, offset ≥ 0.
+        val event = LynxDetailEvent(ui.sign, "offset")
+        event.addDetail("offset", PixelUtils.pxToDip((-offset).toFloat()).toInt())
+        event.addDetail("height", PixelUtils.pxToDip(range.toFloat()).toInt())
+        context.eventEmitter.sendCustomEvent(event)
+    }
 
     fun install() {
         appBar.addOnAttachStateChangeListener(this)
@@ -105,6 +126,8 @@ private class DragOffsetEmitter(
 
     override fun onViewDetachedFromWindow(v: View) {
         appBar.viewTreeObserver.removeOnPreDrawListener(this)
+        appBar.removeCallbacks(emit)
+        posted = false
     }
 
     override fun onPreDraw(): Boolean {
@@ -112,16 +135,12 @@ private class DragOffsetEmitter(
             as? AppBarLayout.Behavior ?: return true
         // ViewOffsetBehavior keeps the applied vertical offset (≤ 0 while collapsing).
         val offset = behavior.topAndBottomOffset
-        if (offset == lastOffset) return true
-        lastOffset = offset
-        val range = appBar.totalScrollRange
-        if (range <= 0) return true
-        val context = ui.lynxContext ?: return true
-        // Same shape and units as XElement's own `offset` event: dip integers, offset ≥ 0.
-        val event = LynxDetailEvent(ui.sign, "offset")
-        event.addDetail("offset", PixelUtils.pxToDip((-offset).toFloat()).toInt())
-        event.addDetail("height", PixelUtils.pxToDip(range.toFloat()).toInt())
-        context.eventEmitter.sendCustomEvent(event)
+        if (offset == lastSeen) return true
+        lastSeen = offset
+        if (!posted) {
+            posted = true
+            appBar.post(emit)
+        }
         return true
     }
 }
