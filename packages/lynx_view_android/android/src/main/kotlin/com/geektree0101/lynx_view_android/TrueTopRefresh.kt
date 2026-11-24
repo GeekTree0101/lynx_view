@@ -1,5 +1,6 @@
 package com.geektree0101.lynx_view_android
 
+import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -13,7 +14,6 @@ import com.lynx.tasm.behavior.ui.LynxFlattenUI
 import com.lynx.tasm.behavior.ui.LynxUI
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.scwang.smart.refresh.layout.listener.ScrollBoundaryDecider
-import com.scwang.smart.refresh.layout.simple.SimpleBoundaryDecider
 
 /**
  * Wraps XElement's `<refresh>` so a pull-to-refresh can only start when the content is at its
@@ -29,8 +29,8 @@ import com.scwang.smart.refresh.layout.simple.SimpleBoundaryDecider
  * header collapsed on a middle section after a slow reverse drag.
  *
  * Both paths consult the layout's `ScrollBoundaryDecider`. XElement leaves the default. This
- * one answers `canRefresh` only when every `AppBarLayout` in the content sits at offset 0, and
- * otherwise defers to the stock decider. Load-more is never used by XElement here.
+ * one answers `canRefresh` only when every `AppBarLayout` in the content sits at offset 0 and no
+ * visible descendant can still scroll up. Load-more is never used by XElement here.
  */
 internal class TrueTopRefreshBehavior(
     private val original: Behavior,
@@ -70,29 +70,27 @@ internal class TrueTopRefreshBehavior(
 }
 
 private object TrueTopDecider : ScrollBoundaryDecider {
-    private const val MAX_DEPTH = 6
-    private val fallback = SimpleBoundaryDecider()
+    private const val MAX_DEPTH = 14
+    private val rect = Rect()
 
-    /**
-     * The leak that mattered is the header: a pull must not open while any `AppBarLayout` is
-     * still collapsed. Beyond that, defer to SmartRefreshLayout's own decider — scanning every
-     * descendant for `canScrollVertically(-1)` (1.12.2) also refused pulls at the real top when a
-     * category page list below the fold still remembered a scroll position.
-     */
-    override fun canRefresh(content: View): Boolean =
-        appBarsExpanded(content, 0) && fallback.canRefresh(content)
+    override fun canRefresh(content: View): Boolean = atTrueTop(content, 0)
 
     override fun canLoadMore(content: View): Boolean = false
 
-    private fun appBarsExpanded(view: View, depth: Int): Boolean {
+    /** False as soon as anything visible under [view] is still scrolled down. */
+    private fun atTrueTop(view: View, depth: Int): Boolean {
+        if (view.visibility != View.VISIBLE || view.width == 0 || view.height == 0) return true
+        // Views laid out off screen (other viewpager pages) do not count.
+        if (!view.getGlobalVisibleRect(rect)) return true
         if (view is AppBarLayout) {
             val behavior = (view.layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
                 as? AppBarLayout.Behavior
             if (behavior != null && behavior.topAndBottomOffset != 0) return false
         }
+        if (view.canScrollVertically(-1)) return false
         if (depth >= MAX_DEPTH || view !is ViewGroup) return true
         for (i in 0 until view.childCount) {
-            if (!appBarsExpanded(view.getChildAt(i), depth + 1)) return false
+            if (!atTrueTop(view.getChildAt(i), depth + 1)) return false
         }
         return true
     }

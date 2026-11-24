@@ -1,10 +1,3 @@
-## 1.12.3
-
-* `<refresh>` gate relaxed: only a collapsed `AppBarLayout` blocks a pull; everything else
-  defers to SmartRefreshLayout's stock decider. 1.12.2 also scanned every visible descendant
-  for `canScrollVertically(-1)`, which refused pulls at the real top whenever a page list
-  below the fold still remembered a scroll position.
-
 ## 1.12.2
 
 * `<refresh>` opens a pull only from the content's true top: every `AppBarLayout` at offset 0

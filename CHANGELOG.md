@@ -1,8 +1,3 @@
-## 1.13.3
-
-* Android: `<refresh>` gate relaxed to "header expanded" only — 1.12.2 could refuse pulls at the
-  real top. Requires `lynx_view_android` 1.12.3.
-
 ## 1.13.2
 
 * Android: `<refresh>` opens only from the content's true top (iOS semantics) — no more
