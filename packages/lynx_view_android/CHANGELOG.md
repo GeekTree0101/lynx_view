@@ -1,3 +1,10 @@
+## 1.12.2
+
+* `<refresh>` opens a pull only from the content's true top: every `AppBarLayout` at offset 0
+  and no visible descendant able to scroll up (`TrueTopRefreshBehavior`, a
+  `ScrollBoundaryDecider`). Around `<scroll-coordinator>` the header↔list nested-scroll hand-off
+  leaked `dy` and opened the refresh header mid-page as a blank band with a torn frame.
+
 ## 1.12.1
 
 * `<scroll-coordinator>` drag `offset` events are now sent after the frame's layout/draw pass

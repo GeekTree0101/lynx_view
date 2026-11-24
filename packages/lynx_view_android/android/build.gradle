@@ -89,6 +89,8 @@ android {
         // resolve against that constraint). Both APIs used here exist since 1.0.0.
         compileOnly "com.google.android.material:material:1.0.0"
         compileOnly "androidx.coordinatorlayout:coordinatorlayout:1.0.0"
+        // SmartRefreshLayout types for TrueTopRefresh — the version XElement's refresh brings.
+        compileOnly "io.github.scwang90:refresh-layout-kernel:3.0.0-alpha"
 
         implementation "org.lynxsdk.lynx:lynx-service-image:4.0.0"
         implementation "com.facebook.fresco:fresco:2.3.0"

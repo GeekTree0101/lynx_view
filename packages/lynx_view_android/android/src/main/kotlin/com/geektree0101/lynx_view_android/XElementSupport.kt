@@ -43,6 +43,9 @@ internal object XElementSupport {
                 // `<scroll-coordinator>` on Android stays silent during touch-driven scrolls;
                 // the wrapper adds the missing `offset` events. See DragOffsetScrollCoordinator.kt.
                 ?.let(DragOffsetScrollCoordinatorBehavior::wrap)
+                // `<refresh>` must only open from the content's true top (iOS semantics); the
+                // default decider lets nested-scroll leaks open it mid-page. See TrueTopRefresh.kt.
+                ?.let(TrueTopRefreshBehavior::wrap)
         } catch (_: ClassNotFoundException) {
             // XElement was excluded by the host app. Expected; not an error.
             null
