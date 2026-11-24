@@ -1,3 +1,8 @@
+## 1.13.2
+
+* Android: `<refresh>` opens only from the content's true top (iOS semantics) — no more
+  mid-page refresh header around `<scroll-coordinator>`. Requires `lynx_view_android` 1.12.2.
+
 ## 1.13.1
 
 * Android: scroll-coordinator drag `offset` events are sent after the frame's traversal, not
