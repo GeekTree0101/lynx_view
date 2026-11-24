@@ -1,3 +1,8 @@
+## 1.13.4
+
+* Same as 1.13.2. Supersedes 1.13.3, which is withdrawn (unverified `<refresh>` gate change).
+  Requires `lynx_view_android` 1.12.4.
+
 ## 1.13.2
 
 * Android: `<refresh>` opens only from the content's true top (iOS semantics) — no more

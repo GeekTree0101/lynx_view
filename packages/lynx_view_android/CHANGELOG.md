@@ -1,3 +1,9 @@
+## 1.12.4
+
+* Same code as 1.12.2. Supersedes 1.12.3, which relaxed the `<refresh>` gate without device
+  verification and is withdrawn (retracted on pub.dev). Pulls open only when every
+  `AppBarLayout` is at offset 0 and no visible descendant can scroll up, as in 1.12.2.
+
 ## 1.12.2
 
 * `<refresh>` opens a pull only from the content's true top: every `AppBarLayout` at offset 0
