@@ -40,6 +40,9 @@ internal object XElementSupport {
             val instance = clazz.getDeclaredConstructor().newInstance()
             @Suppress("UNCHECKED_CAST")
             (clazz.getMethod("create").invoke(instance) as? List<Behavior>)
+                // `<scroll-coordinator>` on Android stays silent during touch-driven scrolls;
+                // the wrapper adds the missing `offset` events. See DragOffsetScrollCoordinator.kt.
+                ?.let(DragOffsetScrollCoordinatorBehavior::wrap)
         } catch (_: ClassNotFoundException) {
             // XElement was excluded by the host app. Expected; not an error.
             null

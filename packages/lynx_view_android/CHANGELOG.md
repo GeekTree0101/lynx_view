@@ -1,3 +1,15 @@
+## 1.12.0
+
+* `<scroll-coordinator>` now fires its `offset` event while a finger drags the
+  header. XElement 4.0.0 emits it only from `AppBarLayout`'s offset listener,
+  which on a real device stays silent during touch-driven scrolling and fires
+  only for flings and programmatic scrolls — a template folding its own app
+  bar from the event lagged the finger or never moved. The plugin wraps
+  XElement's behavior (`DragOffsetScrollCoordinatorBehavior`), keeps the
+  element's own UI and props, and sends the same `{offset, height}` event
+  (dip) whenever the `AppBarLayout` offset changed since the last frame.
+  XElement's own listener still runs, so a fling may deliver an offset twice.
+
 ## 1.11.0
 
 * Registers the stock `LynxImageService` wrapped in `CancellableImageService`.

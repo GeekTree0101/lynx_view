@@ -1,3 +1,11 @@
+## 1.13.0
+
+* Android: `<scroll-coordinator>` fires `offset` while the header is dragged
+  by a finger, not only on flings and programmatic scrolls. See
+  `lynx_view_android` 1.12.0. iOS is unchanged (its own implementation
+  already reports during drags).
+* Requires `lynx_view_android` 1.12.0.
+
 ## 1.12.0
 
 * `LynxImageLoading.setRequestCancellation(bool)` lets an `<image>` request
